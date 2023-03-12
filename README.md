@@ -1,2 +1,3 @@
 # Simulation-modeling-of-queuing-systems
-![image](https://user-images.githubusercontent.com/73974596/224530607-de35eeec-3e30-47a2-b406-76466f684b45.png)
+![Скриншот 12-03-2023 142614](https://user-images.githubusercontent.com/73974596/224530683-0e9ce70f-c6be-4d09-b3dc-4bd3969291ac.png)
+
