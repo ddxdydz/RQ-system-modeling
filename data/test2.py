@@ -67,3 +67,6 @@ if event.key() == QtCore.Qt.Key_Down:
     print(self.p)
     self.application_count_graphic.setYRange(
         0.6, self.data_for_graphics["handler_statuses_graphic_data"]["values"][-1], padding=self.p)
+
+name_list = ['o', 's', 't', 't1', 't2', 't3', 'd', '+', 'x', 'p', 'h', 'star',
+             'arrow_up', 'arrow_right', 'arrow_down', 'arrow_left']

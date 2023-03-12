@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>655</width>
-    <height>461</height>
+    <width>692</width>
+    <height>452</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -157,7 +157,7 @@
                <bool>true</bool>
               </property>
               <property name="text">
-               <string>3</string>
+               <string/>
               </property>
              </widget>
             </item>
@@ -210,7 +210,7 @@
                </size>
               </property>
               <property name="text">
-               <string>1</string>
+               <string/>
               </property>
              </widget>
             </item>
@@ -260,7 +260,7 @@
                </size>
               </property>
               <property name="text">
-               <string>1</string>
+               <string/>
               </property>
              </widget>
             </item>
@@ -318,7 +318,7 @@
            </size>
           </property>
           <property name="text">
-           <string>5</string>
+           <string/>
           </property>
          </widget>
         </item>
@@ -351,7 +351,52 @@
           </property>
          </spacer>
         </item>
-        <item alignment="Qt::AlignHCenter">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="sizeConstraint">
+           <enum>QLayout::SetMaximumSize</enum>
+          </property>
+          <item>
+           <widget class="QProgressBar" name="progressBar">
+            <property name="value">
+             <number>24</number>
+            </property>
+            <property name="textVisible">
+             <bool>true</bool>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="invertedAppearance">
+             <bool>false</bool>
+            </property>
+            <property name="textDirection">
+             <enum>QProgressBar::TopToBottom</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_6">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>0</width>
+              <height>21</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item alignment="Qt::AlignLeft">
          <widget class="QLabel" name="label_message">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">

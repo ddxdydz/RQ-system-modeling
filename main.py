@@ -23,6 +23,9 @@ FREE = 9643  # Свободно
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
+        self.enabled_dividing_lines = False
+        self.enabled_graphic_symbol = False
+        self.y_range_padding = 0
         self.parameters = {
             "application_count": 4,
             "lm": 3.0,
@@ -75,12 +78,16 @@ class MainWindow(QMainWindow):
 
     def launch(self):
         try:
+            self.clear_message()
             self.update_parameters()
             self.check_parameters_range()
+            if self.parameters["application_count"] > 101:
+                self.progressBar.show()
             self.collected_data = self.launch_imitation(**self.parameters)
             self.update_data_for_graphics()
+            self.enabled_dividing_lines = False
             self.update_graphics()
-            self.clear_message()
+            self.progressBar.hide()
         except ValueError:
             self.show_message("Ошибка: \nНекорректные данные")
         except RangeError:
@@ -93,20 +100,21 @@ class MainWindow(QMainWindow):
         self.parameters["application_count"] = int(self.lineEdit_count_value.text())
 
     def check_parameters_range(self):
-        if not (0 < self.parameters["application_count"] < 350 and
+        if not (0 < self.parameters["application_count"] < 351 and
                 0 < self.parameters["lm"] and
                 0 < self.parameters["mu"] and
                 0 < self.parameters["sg"]):
             raise RangeError
 
     def show_message(self, text):
+        self.label_message.show()
         self.label_message.setText(text)
 
     def clear_message(self):
+        self.label_message.hide()
         self.label_message.setText("")
 
-    @staticmethod
-    def launch_imitation(lm, mu, sg, application_count) -> list:
+    def launch_imitation(self, lm, mu, sg, application_count) -> list:
         collected_data = [{"time": 0, "values": {"h_status": 0, "app_count": 0}}]
 
         def get_arrival_time() -> float:
@@ -174,6 +182,8 @@ class MainWindow(QMainWindow):
                         }
                 }
             )
+            progress = int(completed_applications_count * 100 / application_count)
+            self.progressBar.setValue(progress)
 
         return collected_data
 
@@ -208,25 +218,40 @@ class MainWindow(QMainWindow):
             self.application_count_graphic,
             data_name="applications_count_graphic_data",
             brush=mkBrush(0, 0, 255, 80),
-            pen=mkPen(0, 0, 0)
+            pen=mkPen(0, 0, 0),
+            s_brush=mkBrush(0, 0, 255, 255)
         )
         self.add_histogram(
             self.handler_status_graphic,
             data_name="handler_statuses_graphic_data",
             brush=mkBrush(255, 0, 0, 80),
-            pen=mkPen(0, 0, 0)
+            pen=mkPen(0, 0, 0),
+            s_brush=mkBrush(255, 0, 0, 255)
         )
 
-    def add_histogram(self, graphic_obj, data_name, brush, pen):
-        for i in range(len(self.data_for_graphics[data_name]["time"]) - 1):
-            next_time = self.data_for_graphics[data_name]["time"][i + 1]
-            current_time = self.data_for_graphics[data_name]["time"][i]
-            value = self.data_for_graphics[data_name]["values"][i]
-            rect = QGraphicsRectItem(QtCore.QRectF(
-                current_time, 0, next_time - current_time, value))
-            rect.setPen(pen)
-            rect.setBrush(brush)
-            graphic_obj.addItem(rect)
+    def add_histogram(self, graphic_obj, data_name, brush, pen, s_brush=None):
+        if not self.enabled_dividing_lines:
+            graphic_obj.plot(
+                self.data_for_graphics[data_name]["time"],
+                self.data_for_graphics[data_name]["values"],
+                stepMode="center",
+                fillLevel=0,
+                fillOutline=True,
+                brush=brush,
+                pen=pen,
+                symbol="s" if self.enabled_graphic_symbol else None,
+                symbolBrush=s_brush
+            )
+        else:
+            for i in range(len(self.data_for_graphics[data_name]["time"]) - 1):
+                next_time = self.data_for_graphics[data_name]["time"][i + 1]
+                current_time = self.data_for_graphics[data_name]["time"][i]
+                value = self.data_for_graphics[data_name]["values"][i]
+                rect = QGraphicsRectItem(QtCore.QRectF(
+                    current_time, 0, next_time - current_time, value))
+                rect.setPen(pen)
+                rect.setBrush(brush)
+                graphic_obj.addItem(rect)
 
     def clear_graphics(self):
         self.application_count_graphic.clear()
@@ -235,6 +260,22 @@ class MainWindow(QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Enter - 1:
             self.launch()
+        if event.key() == QtCore.Qt.Key_Up:
+            self.y_range_padding += 0.1
+            self.application_count_graphic.setYRange(
+                0.6, self.data_for_graphics["handler_statuses_graphic_data"]["values"][-1],
+                padding=self.y_range_padding)
+        if event.key() == QtCore.Qt.Key_Down and self.y_range_padding - 1 >= 0:
+            self.y_range_padding -= 0.1
+            self.application_count_graphic.setYRange(
+                0.6, self.data_for_graphics["handler_statuses_graphic_data"]["values"][-1],
+                padding=self.y_range_padding)
+        if event.key() == QtCore.Qt.Key_F1:
+            self.enabled_dividing_lines = not self.enabled_dividing_lines
+            self.update_graphics()
+        if event.key() == QtCore.Qt.Key_F2:
+            self.enabled_graphic_symbol = not self.enabled_graphic_symbol
+            self.update_graphics()
 
 
 class RangeError(Exception):
