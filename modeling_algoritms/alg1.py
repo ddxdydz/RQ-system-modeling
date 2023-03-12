@@ -3,7 +3,7 @@ from random import random
 from math import log
 from time import time
 
-APPLICATION_COUNT = 350
+APPLICATION_COUNT = 100
 LM = 3
 MU = 1
 SG = 1
@@ -30,9 +30,10 @@ def get_orbit_time() -> float:
 
 
 def main():
-    # события, относящиеся к заявке по номерам
+    # времена необработанных событий по номерам заявок (номер заявки=индекс)
     applications_events_times = [get_arrival_time() for _ in range(APPLICATION_COUNT)]
-    applications_indicators = [NOT_RECEIVED] * APPLICATION_COUNT
+    # статусы заявок по их номерам
+    applications_statuses = [NOT_RECEIVED] * APPLICATION_COUNT
     handler_status = FREE
     handler_elem_id = None
     completed_applications_count = 0
@@ -40,18 +41,19 @@ def main():
 
     while APPLICATION_COUNT != completed_applications_count:
 
-        # Находим индекс заявки, учавтсующей в ближайшем событии
+        # Находим индекс заявки, участвующей в ближайшем необработанном событии
         nearest_event_applications_index = None
-        min_time = None
+        nearest_event_time = None
         for i in range(APPLICATION_COUNT):
-            if applications_indicators[i] != COMPLETED:
-                if min_time is None or applications_events_times[i] < min_time:
-                    min_time = applications_events_times[i]
+            if applications_statuses[i] != COMPLETED:
+                if nearest_event_time is None or \
+                        applications_events_times[i] < nearest_event_time:
+                    nearest_event_time = applications_events_times[i]
                     nearest_event_applications_index = i
 
         # поступление в систему
-        if applications_indicators[nearest_event_applications_index] == NOT_RECEIVED:
-            applications_indicators[nearest_event_applications_index] = ACTIVE
+        if applications_statuses[nearest_event_applications_index] == NOT_RECEIVED:
+            applications_statuses[nearest_event_applications_index] = ACTIVE
             active_applications_count += 1
 
         # если прибор свободен, то занимаем его ближайшей заявкой
@@ -60,10 +62,11 @@ def main():
             handler_elem_id = nearest_event_applications_index
             applications_events_times[nearest_event_applications_index] += get_handler_time()
         # если прибор был занят текущей заявкой, то освобождаем его
-        elif handler_status == PROCESSING and handler_elem_id == nearest_event_applications_index:
+        elif handler_status == PROCESSING and \
+                handler_elem_id == nearest_event_applications_index:
             handler_status = FREE
             handler_elem_id = None
-            applications_indicators[nearest_event_applications_index] = COMPLETED
+            applications_statuses[nearest_event_applications_index] = COMPLETED
             completed_applications_count += 1
             active_applications_count -= 1
         else:  # на орбиту
