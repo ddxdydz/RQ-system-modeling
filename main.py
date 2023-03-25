@@ -84,8 +84,8 @@ class MainWindow(QMainWindow):
             if self.parameters["application_count"] > 101:
                 self.progressBar.show()
             self.collected_data = self.launch_imitation(**self.parameters)
-            self.update_data_for_graphics()
             self.enabled_dividing_lines = False
+            self.update_data_for_graphics()
             self.update_graphics()
             self.progressBar.hide()
         except ValueError:
@@ -219,39 +219,45 @@ class MainWindow(QMainWindow):
             data_name="applications_count_graphic_data",
             brush=mkBrush(0, 0, 255, 80),
             pen=mkPen(0, 0, 0),
-            s_brush=mkBrush(0, 0, 255, 255)
+            sym_brush=mkBrush(0, 0, 255, 255)
         )
         self.add_histogram(
             self.handler_status_graphic,
             data_name="handler_statuses_graphic_data",
             brush=mkBrush(255, 0, 0, 80),
             pen=mkPen(0, 0, 0),
-            s_brush=mkBrush(255, 0, 0, 255)
+            sym_brush=mkBrush(255, 0, 0, 255)
         )
 
-    def add_histogram(self, graphic_obj, data_name, brush, pen, s_brush=None):
+    def add_histogram(self, graphic_obj, data_name, brush, pen, sym_brush=None):
         if not self.enabled_dividing_lines:
-            graphic_obj.plot(
-                self.data_for_graphics[data_name]["time"],
-                self.data_for_graphics[data_name]["values"],
-                stepMode="center",
-                fillLevel=0,
-                fillOutline=True,
-                brush=brush,
-                pen=pen,
-                symbol="s" if self.enabled_graphic_symbol else None,
-                symbolBrush=s_brush
-            )
+            self.add_solid_histogram(graphic_obj, data_name, brush, pen, sym_brush)
         else:
-            for i in range(len(self.data_for_graphics[data_name]["time"]) - 1):
-                next_time = self.data_for_graphics[data_name]["time"][i + 1]
-                current_time = self.data_for_graphics[data_name]["time"][i]
-                value = self.data_for_graphics[data_name]["values"][i]
-                rect = QGraphicsRectItem(QtCore.QRectF(
-                    current_time, 0, next_time - current_time, value))
-                rect.setPen(pen)
-                rect.setBrush(brush)
-                graphic_obj.addItem(rect)
+            self.add_divided_histogram(graphic_obj, data_name, brush, pen)
+
+    def add_solid_histogram(self, graphic_obj, data_name, brush, pen, sym_brush=None):
+        graphic_obj.plot(
+            self.data_for_graphics[data_name]["time"],
+            self.data_for_graphics[data_name]["values"],
+            stepMode="center",
+            fillLevel=0,
+            fillOutline=True,
+            brush=brush,
+            pen=pen,
+            symbol="s" if self.enabled_graphic_symbol else None,
+            symbolBrush=sym_brush
+        )
+
+    def add_divided_histogram(self, graphic_obj, data_name, brush, pen):
+        for i in range(len(self.data_for_graphics[data_name]["time"]) - 1):
+            next_time = self.data_for_graphics[data_name]["time"][i + 1]
+            current_time = self.data_for_graphics[data_name]["time"][i]
+            value = self.data_for_graphics[data_name]["values"][i]
+            rect = QGraphicsRectItem(QtCore.QRectF(
+                current_time, 0, next_time - current_time, value))
+            rect.setPen(pen)
+            rect.setBrush(brush)
+            graphic_obj.addItem(rect)
 
     def clear_graphics(self):
         self.application_count_graphic.clear()
