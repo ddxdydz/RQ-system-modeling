@@ -8,7 +8,7 @@ lm = 3
 sg = 1
 mu = 1
 
-s1 = time()
+st = time()
 
 T = [-log(random()) / lm for _ in range(count_elem)]
 active_elements = [0] * count_elem
@@ -31,7 +31,6 @@ while 0 in finished_elements:
                 handler_S = 1
                 handler_elem_id = i
                 T[i] += -log(random()) / mu
-
             # если прибор занят этой заявкой
             elif handler_S == 1 and handler_elem_id == i:
                 handler_S = 0
@@ -43,4 +42,4 @@ while 0 in finished_elements:
                 T[i] += -log(random()) / sg
 
 
-print(time() - s1)
+print("Время работы алгоритма: ", time() - st)
