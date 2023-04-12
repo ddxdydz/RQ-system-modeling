@@ -1,5 +1,3 @@
-# Имитационное моделирование систем массового обслуживания
-
 from random import random
 from math import log
 from time import time

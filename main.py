@@ -41,8 +41,8 @@ class MainWindow(QMainWindow):
         self.launch()
 
     def init_ui(self):
-        uic.loadUi('MainWindow.ui', self)
-        self.setWindowIcon(QIcon('data/app_icon.ico'))
+        uic.loadUi(r'data\MainWindow.ui', self)
+        self.setWindowIcon(QIcon(r'data\app_icon.ico'))
         self.setWindowTitle("Имитационное моделирование систем массового обслуживания")
 
         # Добавление параметров по умолчанию в строки ввода
@@ -132,10 +132,8 @@ class MainWindow(QMainWindow):
 
         # статусы заявок по их номерам
         applications_statuses = [NOT_RECEIVED] * application_count
-
         handler_status = FREE
         handler_elem_id = None
-
         completed_applications_count = 0
         active_applications_count = 0
 
@@ -177,7 +175,7 @@ class MainWindow(QMainWindow):
                     "time": nearest_event_time,
                     "values":
                         {
-                            "h_status": 1 if handler_status == PROCESSING else 0,
+                            "h_status": int(handler_status == PROCESSING),
                             "app_count": active_applications_count
                         }
                 }
@@ -191,13 +189,13 @@ class MainWindow(QMainWindow):
         self.clear_last_graphic_data()
         for i in range(1, len(self.collected_data)):
             if self.collected_data[i - 1]["values"]["app_count"] != \
-                    self.collected_data[i]["values"]["app_count"]:
+                    self.collected_data[i]["values"]["app_count"]:  # Если есть изменение, то записываем
                 self.data_for_graphics["applications_count_graphic_data"]["time"].append(
                     self.collected_data[i]["time"]),
                 self.data_for_graphics["applications_count_graphic_data"]["values"].append(
                     self.collected_data[i]["values"]["app_count"])
             if self.collected_data[i - 1]["values"]["h_status"] != \
-                    self.collected_data[i]["values"]["h_status"]:
+                    self.collected_data[i]["values"]["h_status"]:  # Если есть изменение, то записываем
                 self.data_for_graphics["handler_statuses_graphic_data"]["time"].append(
                     self.collected_data[i]["time"]),
                 self.data_for_graphics["handler_statuses_graphic_data"]["values"].append(

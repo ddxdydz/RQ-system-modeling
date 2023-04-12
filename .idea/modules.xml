@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Simulation-modeling-of-queuing-systems.iml" filepath="$PROJECT_DIR$/.idea/Simulation-modeling-of-queuing-systems.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../python_scrips/.idea/python_scrips.iml" filepath="$PROJECT_DIR$/../python_scrips/.idea/python_scrips.iml" />
     </modules>
   </component>
 </project>
