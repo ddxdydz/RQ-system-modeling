@@ -1,23 +1,17 @@
 import sys
-from math import log
-from random import random
 
 from PyQt5 import uic
 from PyQt5 import QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5.QtWidgets import QGraphicsRectItem
-
 from pyqtgraph import mkBrush, mkPen
 
+from algorithms.alg1 import main as alg1
 
-# Статусы заявок
-NOT_RECEIVED = 1352  # Не поступило в систему
-ACTIVE = 2536  # Находится в системе / активно
-COMPLETED = 7435  # Завершено / обработано
-# Статусы обработчика
-PROCESSING = 6366  # В обработке / занято
-FREE = 9643  # Свободно
+
+# TODO исправить баг со съездом графиков при возникновении дробных значений
+# TODO изменение отображения графика по оси Y
 
 
 class MainWindow(QMainWindow):
@@ -31,9 +25,6 @@ class MainWindow(QMainWindow):
             "mu": 1.0,
             "sg": 1.0
         }
-
-        # Данные, собранные при выполнении алгоритма:
-        self.collected_data = []
 
         # Данные для построения графиков (гистограмм):
         self.data_for_graphics = {
@@ -93,10 +84,10 @@ class MainWindow(QMainWindow):
             self.check_parameters_range()
             if self.parameters["application_count"] > 101:
                 self.progressBar.show()
-            self.collected_data = self.launch_imitation(**self.parameters)
-            self.enabled_dividing_lines = False
-            self.update_data_for_graphics()
+            collected_data_alg1 = alg1(**self.parameters, progress_bar_widget=self.progressBar)
+            self.update_data_for_graphics(collected_data_alg1)
             self.update_graphic_widgets()
+            self.enabled_dividing_lines = False
             self.progressBar.hide()
         except ValueError:
             self.show_message("Ошибка: \nНекорректные значения")
@@ -124,115 +115,37 @@ class MainWindow(QMainWindow):
         self.label_message.hide()
         self.label_message.setText("")
 
-    def launch_imitation(self, lm, mu, sg, application_count) -> list:
-        collected_data = [{"time": 0, "values": {"h_status": FREE, "app_count": 0}}]
-
-        def get_arrival_time() -> float:
-            return -log(random()) / lm
-
-        def get_handler_time() -> float:
-            return -log(random()) / mu
-
-        def get_orbit_time() -> float:
-            return -log(random()) / sg
-
-        completed_applications_count = 0  # Количество обработанных заявок
-        active_applications_count = 0  # Количество заявок, находящихся в системе
-
-        handler_status = FREE
-        handler_application_id = None  # Индекс заявки, находящейся в обработке
-
-        # Статусы заявок по их индексам:
-        applications_statuses = [NOT_RECEIVED] * application_count
-        # Изначально в системе нет заявок, поэтому у всех заявок статусы "NOT_RECEIVED".
-
-        # Список, содержащий время наступления ближайшего необработанного события для каждой заявки по её индексу:
-        times_of_unprocessed_events_by_application_indexes = \
-            [get_arrival_time() for _ in range(application_count)]
-        # Изначально у каждой заявки ближайшим событием является поступление в систему.
-
-        while completed_applications_count != application_count:
-
-            # Находим индекс заявки, участвующей в необработанном событии, которое наступает раньше остальных:
-            application_index_of_nearest_event = None
-            nearest_event_time = None
-            for i in range(application_count):
-                # Проверяем только времена событий, в которых учавствуют необработанные заявки:
-                if applications_statuses[i] != COMPLETED:
-                    if nearest_event_time is None or \
-                            times_of_unprocessed_events_by_application_indexes[i] < nearest_event_time:
-                        nearest_event_time = times_of_unprocessed_events_by_application_indexes[i]
-                        application_index_of_nearest_event = i
-
-            # Поступление заявки в систему
-            if applications_statuses[application_index_of_nearest_event] == NOT_RECEIVED:
-                applications_statuses[application_index_of_nearest_event] = ACTIVE
-                active_applications_count += 1
-
-            # Если прибор свободен, то занимаем его ближайшей заявкой
-            if handler_status == FREE:
-                handler_status = PROCESSING
-                handler_application_id = application_index_of_nearest_event
-                times_of_unprocessed_events_by_application_indexes[
-                    application_index_of_nearest_event] += get_handler_time()
-            # Если прибор был занят текущей заявкой, то освобождаем его
-            elif handler_status == PROCESSING and \
-                    handler_application_id == application_index_of_nearest_event:
-                handler_status = FREE
-                handler_application_id = None
-                applications_statuses[application_index_of_nearest_event] = COMPLETED
-                completed_applications_count += 1
-                active_applications_count -= 1
-            else:  # на орбиту
-                times_of_unprocessed_events_by_application_indexes[
-                    application_index_of_nearest_event] += get_orbit_time()
-
-            collected_data.append(
-                {
-                    "time": nearest_event_time,
-                    "values":
-                        {
-                            "h_status": handler_status,
-                            "app_count": active_applications_count
-                        }
-                }
-            )
-            progress = int(completed_applications_count * 100 / application_count)
-            self.progressBar.setValue(progress)
-
-        return collected_data
-
-    def update_data_for_graphics(self):
+    def update_data_for_graphics(self, collected_data):
         self.clear_graphic_data()
+        collected_events_data = collected_data["events_data"]
 
         # Формируем данные для построения гистограмм из собранных значений:
-        for i in range(1, len(self.collected_data)):
+        for i in range(1, len(collected_events_data)):
 
             # Формирование данных для гистограммы, показывающей изменение количества заявок по времени:
-            if self.collected_data[i - 1]["values"]["app_count"] != \
-                    self.collected_data[i]["values"]["app_count"]:  # Если есть изменение, то записываем его
+            if collected_events_data[i - 1]["values"]["app_count"] != \
+                    collected_events_data[i]["values"]["app_count"]:  # Если есть изменение, то записываем его
                 # Добавляем время, когда произошло изменение:
                 self.data_for_graphics["applications_count_graphic_data"]["time"].append(
-                    self.collected_data[i]["time"])
+                    collected_events_data[i]["time"])
                 # Добавляем изменённое количество заявок в системе:
                 self.data_for_graphics["applications_count_graphic_data"]["values"].append(
-                    self.collected_data[i]["values"]["app_count"])
+                    collected_events_data[i]["values"]["app_count"])
 
             # Формирование данных для гистограммы, показывающей изменение статуса обработчика по времени:
-            if self.collected_data[i - 1]["values"]["h_status"] != \
-                    self.collected_data[i]["values"]["h_status"]:  # Если есть изменение, то записываем его
+            if collected_events_data[i - 1]["values"]["h_status"] != \
+                    collected_events_data[i]["values"]["h_status"]:  # Если есть изменение, то записываем его
                 # Добавляем время, когда произошло изменение:
                 self.data_for_graphics["handler_statuses_graphic_data"]["time"].append(
-                    self.collected_data[i]["time"])
-                # Добавляем значение "1", если обработчик заняли,
-                # иначе добавляем "0" (обработчик освободился):
-                if self.collected_data[i]["values"]["h_status"] == PROCESSING:
-                    self.data_for_graphics["handler_statuses_graphic_data"]["values"].append(1)
-                else:
-                    self.data_for_graphics["handler_statuses_graphic_data"]["values"].append(0)
+                    collected_events_data[i]["time"])
+                # Добавляем изменённый статус обработчика:
+                self.data_for_graphics["handler_statuses_graphic_data"]["values"].append(
+                    collected_events_data[i]["values"]["h_status"])
 
         # Удаляем последнее значение из данных для графиков для возможности отображения гистограм
         # Это последнее значение равняется изначальному значению и не влияет на общий результат
+        print(len(self.data_for_graphics["handler_statuses_graphic_data"]["time"]))
+        print(len(self.data_for_graphics["handler_statuses_graphic_data"]["values"]))
         self.data_for_graphics["handler_statuses_graphic_data"]["values"].pop(-1)
         self.data_for_graphics["applications_count_graphic_data"]["values"].pop(-1)
 
