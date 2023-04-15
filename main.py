@@ -10,10 +10,6 @@ from pyqtgraph import mkBrush, mkPen
 from algorithms.alg1 import main as alg1
 
 
-# TODO исправить баг со съездом графиков при возникновении дробных значений
-# TODO изменение отображения графика по оси Y
-
-
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
@@ -63,7 +59,7 @@ class MainWindow(QMainWindow):
         self.init_graphic_ui(
             self.handler_status_graphic,
             title="Изменение статуса обработчика",
-            left_label="Статус обработчика",
+            left_label="Статус",
             bottom_label="Время (секунды)"
         )
 
@@ -80,19 +76,22 @@ class MainWindow(QMainWindow):
     def launch(self):
         try:
             self.clear_message()
+            self.pushButton.hide()
             self.update_parameters()
             self.check_parameters_range()
             if self.parameters["application_count"] > 101:
                 self.progressBar.show()
             collected_data_alg1 = alg1(**self.parameters, progress_bar_widget=self.progressBar)
             self.update_data_for_graphics(collected_data_alg1)
-            self.update_graphic_widgets()
             self.enabled_dividing_lines = False
+            self.update_graphic_widgets()
             self.progressBar.hide()
         except ValueError:
             self.show_message("Ошибка: \nНекорректные значения")
         except RangeError:
             self.show_message("Ошибка: \nНекорректный диапазон")
+        finally:
+            self.pushButton.show()
 
     def update_parameters(self):
         self.parameters["lm"] = float(self.lineEdit_lm_value.text().replace(',', '.'))
@@ -144,8 +143,6 @@ class MainWindow(QMainWindow):
 
         # Удаляем последнее значение из данных для графиков для возможности отображения гистограм
         # Это последнее значение равняется изначальному значению и не влияет на общий результат
-        print(len(self.data_for_graphics["handler_statuses_graphic_data"]["time"]))
-        print(len(self.data_for_graphics["handler_statuses_graphic_data"]["values"]))
         self.data_for_graphics["handler_statuses_graphic_data"]["values"].pop(-1)
         self.data_for_graphics["applications_count_graphic_data"]["values"].pop(-1)
 
@@ -213,15 +210,15 @@ class MainWindow(QMainWindow):
 
         # Сжатие/растяжение отображения графика по оси Y
         if event.key() == QtCore.Qt.Key_Up:
-            self.y_range_padding += 0.1
+            self.y_range_padding += 1
             self.application_count_graphic.setYRange(
-                0.6, self.data_for_graphics["handler_statuses_graphic_data"]["values"][-1],
-                padding=self.y_range_padding)
-        if event.key() == QtCore.Qt.Key_Down and self.y_range_padding >= 1:
-            self.y_range_padding -= 0.1
+                0, max(self.data_for_graphics["applications_count_graphic_data"]["values"]),
+                padding=self.y_range_padding * 0.1)
+        if event.key() == QtCore.Qt.Key_Down and self.y_range_padding > 1:
+            self.y_range_padding -= 1
             self.application_count_graphic.setYRange(
-                0.6, self.data_for_graphics["handler_statuses_graphic_data"]["values"][-1],
-                padding=self.y_range_padding)
+                0, max(self.data_for_graphics["applications_count_graphic_data"]["values"]),
+                padding=self.y_range_padding * 0.1)
 
         # Показать/скрыть линии, разделяющие столбцы гистограммы
         if event.key() == QtCore.Qt.Key_F1:
