@@ -4,7 +4,6 @@ from PyQt5 import uic
 from PyQt5 import QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication
-from PyQt5.QtWidgets import QGraphicsRectItem
 from pyqtgraph import mkBrush, mkPen
 
 from algorithms.alg1 import main as alg1
@@ -29,9 +28,8 @@ class MainWindow(QMainWindow):
         }
 
         # Параметры отображения графиков:
-        self.enabled_dividing_lines = False
         self.enabled_graphic_symbol = False
-        self.y_range_padding = 0
+        self.max_count_of_ticks_oy = 15
 
         self.init_ui()
         self.launch()
@@ -86,7 +84,6 @@ class MainWindow(QMainWindow):
                 self.progressBar.show()
             collected_data_alg1 = alg1(**self.parameters, progress_bar_widget=self.progressBar)
             self.update_data_for_graphics(collected_data_alg1)
-            self.enabled_dividing_lines = False
             self.update_graphic_widgets()
             self.progressBar.hide()
         except ValueError:
@@ -173,12 +170,6 @@ class MainWindow(QMainWindow):
         )
 
     def add_histogram(self, graphic_obj, data_name, brush, pen, sym_brush=None):
-        if not self.enabled_dividing_lines:
-            self.add_solid_histogram(graphic_obj, data_name, brush, pen, sym_brush)
-        else:
-            self.add_divided_histogram(graphic_obj, data_name, brush, pen)
-
-    def add_solid_histogram(self, graphic_obj, data_name, brush, pen, sym_brush=None):
         graphic_obj.plot(
             self.data_for_graphics[data_name]["time"],
             self.data_for_graphics[data_name]["values"],
@@ -190,18 +181,17 @@ class MainWindow(QMainWindow):
             symbol="s" if self.enabled_graphic_symbol else None,
             symbolBrush=sym_brush
         )
+        self.set_oy_view_values(graphic_obj, data_name)
 
-    def add_divided_histogram(self, graphic_obj, data_name, brush, pen):
-        # Добавление столбцов гистограммы в виде прямоугольников
-        for i in range(len(self.data_for_graphics[data_name]["time"]) - 1):
-            next_time = self.data_for_graphics[data_name]["time"][i + 1]
-            current_time = self.data_for_graphics[data_name]["time"][i]
-            value = self.data_for_graphics[data_name]["values"][i]
-            rect = QGraphicsRectItem(QtCore.QRectF(
-                current_time, 0, next_time - current_time, value))
-            rect.setPen(pen)
-            rect.setBrush(brush)
-            graphic_obj.addItem(rect)
+    def set_oy_view_values(self, graphic_obj, data_name):
+        ay = graphic_obj.getAxis('left')
+        graphic_values = self.data_for_graphics[data_name]["values"]
+        max_elem = max(graphic_values)
+        step = 1
+        if max_elem > self.max_count_of_ticks_oy:
+            step = max_elem // self.max_count_of_ticks_oy
+        ticks = [i for i in range(0, max_elem + 1, step)]
+        ay.setTicks([[(v, str(v)) for v in ticks]])
 
     def clear_graphic_widgets(self):
         self.application_count_graphic.clear()
@@ -210,23 +200,6 @@ class MainWindow(QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Enter - 1:
             self.launch()
-
-        # Сжатие/растяжение отображения графика по оси Y
-        if event.key() == QtCore.Qt.Key_Up:
-            self.y_range_padding += 1
-            self.application_count_graphic.setYRange(
-                0, max(self.data_for_graphics["applications_count_graphic_data"]["values"]),
-                padding=self.y_range_padding * 0.1)
-        if event.key() == QtCore.Qt.Key_Down and self.y_range_padding > 1:
-            self.y_range_padding -= 1
-            self.application_count_graphic.setYRange(
-                0, max(self.data_for_graphics["applications_count_graphic_data"]["values"]),
-                padding=self.y_range_padding * 0.1)
-
-        # Показать/скрыть линии, разделяющие столбцы гистограммы
-        if event.key() == QtCore.Qt.Key_F1:
-            self.enabled_dividing_lines = not self.enabled_dividing_lines
-            self.update_graphic_widgets()
 
         # Показать/скрыть символы над столбцами гистограммы
         if event.key() == QtCore.Qt.Key_F2:
