@@ -91,7 +91,8 @@ def main(application_count, lm, mu, sg, progress_bar_widget=None):
         )
         if progress_bar_widget is not None:
             progress = int(completed_applications_count * 100 / application_count)
-            progress_bar_widget.setValue(progress)
+            if progress % 20 == 0:
+                progress_bar_widget.setValue(progress)
 
     collected_data["algorithm_working_time"] = time() - start_algorithm_working_time
     return collected_data

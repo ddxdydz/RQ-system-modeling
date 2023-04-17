@@ -31,6 +31,11 @@ class MainWindow(QMainWindow):
         self.max_count_of_left_ticks = 15
         self.width_left_axis_px = 35
 
+        # Выносим процесс вычисления результатов симуляции в отдельный поток для разгрузки основного цикла:
+        self.thread_alg1 = Thread(alg1, self.parameters)
+        # В этом случае управление вернёться к основному циклу обработки событий после запуска потока.
+        # Это делается для возможности обновления графического интерфейса без ожидания окончания симуляции.
+
         self.init_ui()
         self.launch()
 
@@ -39,15 +44,20 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon(r'data\app_icon.ico'))
         self.setWindowTitle("Имитационное моделирование систем массового обслуживания")
 
-        # Добавление параметров по умолчанию в строки ввода
+        # Добавление параметров по умолчанию в строки ввода:
         self.lineEdit_lm_value.setText(str(self.parameters["lm"]))
         self.lineEdit_mu_value.setText(str(self.parameters["mu"]))
         self.lineEdit_sg_value.setText(str(self.parameters["sg"]))
         self.lineEdit_count_value.setText(str(self.parameters["application_count"]))
 
-        # При нажатии на кнопку "запуск" будет вызвана функция self.launch
+        # При нажатии на кнопку "запуск" будет вызвана функция self.launch:
         self.pushButton.clicked.connect(self.launch)
 
+        # После завершения алгоритма будут вызваны переданные функции:
+        self.thread_alg1.finished.connect(lambda: self.process_the_collected_data())
+        self.thread_alg1.finished.connect(lambda: self.to_based_widgets_state())
+
+        # Инициализация интерфейса графических виджетов:
         self.init_graphic_ui(
             self.application_count_graphic,
             title="Изменение количества заявок",
@@ -75,23 +85,35 @@ class MainWindow(QMainWindow):
         graphic_obj.getPlotItem().setMenuEnabled(False)
 
     def launch(self):
-        try:
-            self.clear_message()
-            self.pushButton.hide()
-            self.update_parameters()
-            self.check_parameters_range()
-            if self.parameters["application_count"] > 101:
-                self.progressBar.show()
-            collected_data_alg1 = alg1(**self.parameters, progress_bar_widget=self.progressBar)
-            self.update_data_for_graphics(collected_data_alg1)
-            self.update_graphic_widgets()
-            self.progressBar.hide()
-        except ValueError:
-            self.show_message("Ошибка: \nНекорректные значения")
-        except RangeError:
-            self.show_message("Ошибка: \nНекорректный диапазон")
-        finally:
-            self.pushButton.show()
+        if not self.thread_alg1.isRunning():
+            try:
+                self.clear_message()
+                self.update_parameters()
+                self.check_parameters_range()
+                # self.pushButton.hide()
+                self.pushButton.setEnabled(False)
+                # if self.parameters["application_count"] > 101:
+                #     self.progressBar.show()
+                # Запуск алгоритма в отдельном процессе:
+                self.thread_alg1.set_parameters(self.parameters)
+                self.thread_alg1.start()
+            except ValueError:
+                self.show_message("Ошибка: \nНекорректные значения")
+                self.to_based_widgets_state()
+            except RangeError:
+                self.show_message("Ошибка: \nНекорректный диапазон")
+                self.to_based_widgets_state()
+
+    def process_the_collected_data(self):
+        # Обрабатываем собранные значения и строим на их основе графики:
+        collected_data_alg1 = self.thread_alg1.results
+        self.update_data_for_graphics(collected_data_alg1)
+        self.update_graphic_widgets()
+
+    def to_based_widgets_state(self):
+        self.pushButton.show()
+        self.pushButton.setEnabled(True)
+        self.progressBar.hide()
 
     def update_parameters(self):
         self.parameters["lm"] = float(self.lineEdit_lm_value.text().replace(',', '.'))
@@ -197,6 +219,20 @@ class MainWindow(QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Enter - 1:
             self.launch()
+
+
+class Thread(QtCore.QThread):
+    def __init__(self, algorithm, parameters=None):
+        super(Thread, self).__init__()
+        self.algorithm = algorithm
+        self.parameters = parameters
+        self.results = None
+
+    def set_parameters(self, parameters):
+        self.parameters = parameters
+
+    def run(self):
+        self.results = self.algorithm(**self.parameters)
 
 
 class RangeError(Exception):
