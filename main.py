@@ -28,8 +28,8 @@ class MainWindow(QMainWindow):
         }
 
         # Параметры отображения графиков:
-        self.enabled_graphic_symbol = False
-        self.max_count_of_ticks_oy = 15
+        self.max_count_of_left_ticks = 15
+        self.width_left_axis_px = 35
 
         self.init_ui()
         self.launch()
@@ -61,8 +61,7 @@ class MainWindow(QMainWindow):
             bottom_label="Время (секунды)"
         )
 
-    @staticmethod
-    def init_graphic_ui(graphic_obj, title=None, left_label=None, bottom_label=None):
+    def init_graphic_ui(self, graphic_obj, title=None, left_label=None, bottom_label=None):
         graphic_obj.addLegend()
         graphic_obj.setBackground('w')
         graphic_obj.showGrid(x=True, y=True)
@@ -71,8 +70,9 @@ class MainWindow(QMainWindow):
         graphic_obj.setLabel("left", left_label, **styles)
         graphic_obj.setLabel("bottom", bottom_label, **styles)
         ay = graphic_obj.getAxis('left')
-        ay.setWidth(w=35)
+        ay.setWidth(w=self.width_left_axis_px)
         graphic_obj.setMouseEnabled(x=True, y=False)
+        graphic_obj.getPlotItem().setMenuEnabled(False)
 
     def launch(self):
         try:
@@ -100,7 +100,7 @@ class MainWindow(QMainWindow):
         self.parameters["application_count"] = int(self.lineEdit_count_value.text())
 
     def check_parameters_range(self):
-        if not (0 < self.parameters["application_count"] < 351 and
+        if not (0 < self.parameters["application_count"] <= 400 and
                 0 < self.parameters["lm"] and
                 0 < self.parameters["mu"] and
                 0 < self.parameters["sg"]):
@@ -158,18 +158,16 @@ class MainWindow(QMainWindow):
             self.application_count_graphic,
             data_name="applications_count_graphic_data",
             brush=mkBrush(0, 0, 255, 80),
-            pen=mkPen(0, 0, 0),
-            sym_brush=mkBrush(0, 0, 255, 255)
+            pen=mkPen(0, 0, 0)
         )
         self.add_histogram(
             self.handler_status_graphic,
             data_name="handler_statuses_graphic_data",
             brush=mkBrush(255, 0, 0, 80),
-            pen=mkPen(0, 0, 0),
-            sym_brush=mkBrush(255, 0, 0, 255)
+            pen=mkPen(0, 0, 0)
         )
 
-    def add_histogram(self, graphic_obj, data_name, brush, pen, sym_brush=None):
+    def add_histogram(self, graphic_obj, data_name, brush, pen):
         graphic_obj.plot(
             self.data_for_graphics[data_name]["time"],
             self.data_for_graphics[data_name]["values"],
@@ -178,18 +176,17 @@ class MainWindow(QMainWindow):
             fillOutline=True,
             brush=brush,
             pen=pen,
-            symbol="s" if self.enabled_graphic_symbol else None,
-            symbolBrush=sym_brush
+            symbol=None
         )
-        self.set_oy_view_values(graphic_obj, data_name)
+        self.set_left_view_values(graphic_obj, data_name)
 
-    def set_oy_view_values(self, graphic_obj, data_name):
+    def set_left_view_values(self, graphic_obj, data_name):
         ay = graphic_obj.getAxis('left')
         graphic_values = self.data_for_graphics[data_name]["values"]
         max_elem = max(graphic_values)
         step = 1
-        if max_elem > self.max_count_of_ticks_oy:
-            step = max_elem // self.max_count_of_ticks_oy
+        if max_elem > self.max_count_of_left_ticks:
+            step = max_elem // self.max_count_of_left_ticks
         ticks = [i for i in range(0, max_elem + 1, step)]
         ay.setTicks([[(v, str(v)) for v in ticks]])
 
@@ -200,11 +197,6 @@ class MainWindow(QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Enter - 1:
             self.launch()
-
-        # Показать/скрыть символы над столбцами гистограммы
-        if event.key() == QtCore.Qt.Key_F2:
-            self.enabled_graphic_symbol = not self.enabled_graphic_symbol
-            self.update_graphic_widgets()
 
 
 class RangeError(Exception):
