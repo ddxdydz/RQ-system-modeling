@@ -12,12 +12,13 @@ FREE = 9643  # Свободно
 PROCESSING = 6366  # В обработке / занято
 
 
-def main(application_count, lm, mu, sg, progress_bar_widget=None):
+def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
     collected_data = {
         "events_data": [{"time": 0, "values": {"h_status": 0, "app_count": 0}}],
         "algorithm_working_time": None
     }
     start_algorithm_working_time = time()
+    last_progress_value = 0
 
     def get_arrival_time() -> float:
         return -log(random()) / lm
@@ -89,14 +90,17 @@ def main(application_count, lm, mu, sg, progress_bar_widget=None):
                     }
             }
         )
-        if progress_bar_widget is not None:
+        if signal_to_change_progress_value is not None:
             progress = int(completed_applications_count * 100 / application_count)
-            if progress % 20 == 0:
-                progress_bar_widget.setValue(progress)
+            if progress != last_progress_value and progress % 5 == 0:
+                signal_to_change_progress_value.emit(progress)
+                last_progress_value = progress
+                print(progress)
 
     collected_data["algorithm_working_time"] = time() - start_algorithm_working_time
     return collected_data
 
 
 if __name__ == '__main__':
-    main(application_count=100, lm=3, mu=1, sg=1)
+    result = main(application_count=100, lm=3, mu=1, sg=1)
+    print(result["algorithm_working_time"])

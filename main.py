@@ -57,6 +57,9 @@ class MainWindow(QMainWindow):
         self.thread_alg1.finished.connect(lambda: self.process_the_collected_data())
         self.thread_alg1.finished.connect(lambda: self.to_based_widgets_state())
 
+        # Подключение функции для вызова из потока по сигналу:
+        self.thread_alg1.change_value.connect(self.progressBar.setValue)
+
         # Инициализация интерфейса графических виджетов:
         self.init_graphic_ui(
             self.application_count_graphic,
@@ -90,10 +93,10 @@ class MainWindow(QMainWindow):
                 self.clear_message()
                 self.update_parameters()
                 self.check_parameters_range()
-                # self.pushButton.hide()
+                self.pushButton.hide()
                 self.pushButton.setEnabled(False)
-                # if self.parameters["application_count"] > 101:
-                #     self.progressBar.show()
+                if self.parameters["application_count"] > 101:
+                    self.progressBar.show()
                 # Запуск алгоритма в отдельном процессе:
                 self.thread_alg1.set_parameters(self.parameters)
                 self.thread_alg1.start()
@@ -113,6 +116,7 @@ class MainWindow(QMainWindow):
     def to_based_widgets_state(self):
         self.pushButton.show()
         self.pushButton.setEnabled(True)
+        self.progressBar.setValue(0)
         self.progressBar.hide()
 
     def update_parameters(self):
@@ -222,6 +226,8 @@ class MainWindow(QMainWindow):
 
 
 class Thread(QtCore.QThread):
+    change_value = QtCore.pyqtSignal(int)  # Для счёта процентов выполнения
+
     def __init__(self, algorithm, parameters=None):
         super(Thread, self).__init__()
         self.algorithm = algorithm
@@ -232,7 +238,10 @@ class Thread(QtCore.QThread):
         self.parameters = parameters
 
     def run(self):
-        self.results = self.algorithm(**self.parameters)
+        self.results = self.algorithm(
+            **self.parameters,
+            signal_to_change_progress_value=self.change_value
+        )
 
 
 class RangeError(Exception):
