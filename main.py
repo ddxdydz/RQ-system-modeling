@@ -72,6 +72,9 @@ class MainWindow(QMainWindow):
         styles = {"color": "#f00", "font-size": "8pt"}
         graphic_obj.setLabel("left", left_label, **styles)
         graphic_obj.setLabel("bottom", bottom_label, **styles)
+        ay = graphic_obj.getAxis('left')
+        ay.setWidth(w=35)
+        graphic_obj.setMouseEnabled(x=True, y=False)
 
     def launch(self):
         try:
