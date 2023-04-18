@@ -57,7 +57,7 @@ class MainWindow(QMainWindow):
         self.thread_alg1.finished.connect(lambda: self.process_the_collected_data())
         self.thread_alg1.finished.connect(lambda: self.to_based_widgets_state())
 
-        # Подключение функции для вызова из потока по сигналу:
+        # Подключение функции для возможности её вызова из потока по сигналу:
         self.thread_alg1.change_value.connect(self.progressBar.setValue)
 
         # Инициализация интерфейса графических виджетов:
@@ -93,9 +93,9 @@ class MainWindow(QMainWindow):
                 self.clear_message()
                 self.update_parameters()
                 self.check_parameters_range()
-                self.pushButton.hide()
                 self.pushButton.setEnabled(False)
                 if self.parameters["application_count"] > 101:
+                    self.pushButton.hide()
                     self.progressBar.show()
                 # Запуск алгоритма в отдельном процессе:
                 self.thread_alg1.set_parameters(self.parameters)
@@ -205,6 +205,7 @@ class MainWindow(QMainWindow):
             symbol=None
         )
         self.set_left_view_values(graphic_obj, data_name)
+        graphic_obj.autoRange()
 
     def set_left_view_values(self, graphic_obj, data_name):
         ay = graphic_obj.getAxis('left')
@@ -223,6 +224,9 @@ class MainWindow(QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Enter - 1:
             self.launch()
+        if event.key() == QtCore.Qt.Key_F5:
+            self.application_count_graphic.autoRange()
+            self.handler_status_graphic.autoRange()
 
 
 class Thread(QtCore.QThread):
