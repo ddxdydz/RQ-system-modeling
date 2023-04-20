@@ -4,12 +4,13 @@ from PyQt5 import uic
 from PyQt5 import QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
-    QMainWindow, QApplication,
+    QMainWindow, QApplication, QLineEdit,
     QProgressBar, QLabel, QPushButton)
 from pyqtgraph import (mkBrush, mkPen)
 
-from data.constants import *
-from algorithms.alg1_1 import main as alg1
+from constants import *
+from algorithms.algorithm_settings import SETTINGS_ALGORITHM_1
+from algorithms.algorithm1 import main as alg1
 
 
 class MainWindow(QMainWindow):
@@ -96,19 +97,26 @@ class MainWindow(QMainWindow):
     def init_graphic_ui(self, graphic_obj, title=None, left_label=None, bottom_label=None):
         graphic_obj.addLegend()
         graphic_obj.setBackground('w')
-        graphic_obj.showGrid(x=True, y=True)
-        graphic_obj.setTitle(title, color="b", size="15pt")
-        styles = {"color": "#f00", "font-size": "8pt"}
-        graphic_obj.setLabel("left", left_label, **styles)
-        graphic_obj.setLabel("bottom", bottom_label, **styles)
+
+        styles_title = {"color": "b", "font-size": "15pt"}
+        graphic_obj.setTitle(title, **styles_title)
+
+        styles_labels = {"color": "#f00", "font-size": "8pt"}
+        graphic_obj.setLabel("left", left_label, **styles_labels)
+        graphic_obj.setLabel("bottom", bottom_label, **styles_labels)
+
         ay = graphic_obj.getAxis('left')
+
         ay.setWidth(w=self.width_left_axis_px)
+        graphic_obj.showGrid(x=True, y=True)
         graphic_obj.setMouseEnabled(x=True, y=False)
+
         graphic_obj.getPlotItem().setMenuEnabled(False)
 
     def launch(self):
         if not self.thread_alg1.isRunning():
             try:
+                self.clear_graphic_widgets()
                 self.update_parameters()
                 self.check_parameters_range()
                 self.lunch_button.setEnabled(False)
@@ -158,6 +166,9 @@ class MainWindow(QMainWindow):
         self.parameters["mu"] = float(self.lineEdit_mu_value.text().replace(',', '.'))
         self.parameters["sg"] = float(self.lineEdit_sg_value.text().replace(',', '.'))
         self.parameters["application_count"] = int(self.lineEdit_count_value.text())
+
+    def check_parameters_fullness(self):
+        pass
 
     def check_parameters_range(self):
         if not (0 < self.parameters["application_count"] <= 100000 and
@@ -230,7 +241,6 @@ class MainWindow(QMainWindow):
             fillOutline=True,
             brush=brush,
             pen=pen,
-            symbol=None
         )
         self.set_left_view_values(graphic_obj, data_name)
         graphic_obj.autoRange()
@@ -270,9 +280,9 @@ class Thread(QtCore.QThread):
         self.parameters = parameters
 
     def run(self):
-        # В случае если процесс будет принудительно остановлен:
+        # В случае, если процесс будет принудительно остановлен:
         self.results["status"] = TERMITE
-        # Запус процесса:
+        # Запуск процесса:
         self.results = self.algorithm(
             **self.parameters,
             signal_to_change_progress_value=self.change_value

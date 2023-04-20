@@ -2,7 +2,7 @@ from random import random
 from math import log
 from time import time
 
-from data.constants import *
+from constants import *
 
 
 # Статусы заявок
