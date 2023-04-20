@@ -44,18 +44,17 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
         [get_arrival_time() for _ in range(application_count)]
     # Изначально у каждой заявки ближайшим событием является поступление в систему.
 
+    # Индексы отсортированных заявок по временам наступления их необработанных ближайших событий
+    sorted_app_ids = sorted(
+        list(range(application_count)),
+        key=lambda app_i: times_of_unprocessed_events_by_application_indexes[app_i]
+    )
+
     while completed_applications_count != application_count:
 
         # Находим индекс заявки, участвующей в необработанном событии, которое наступает раньше остальных:
-        application_index_of_nearest_event = None
-        nearest_event_time = None
-        for i in range(application_count):
-            # Проверяем только времена событий, в которых учавствуют необработанные заявки:
-            if applications_statuses[i] != COMPLETED:
-                if nearest_event_time is None or \
-                        times_of_unprocessed_events_by_application_indexes[i] < nearest_event_time:
-                    nearest_event_time = times_of_unprocessed_events_by_application_indexes[i]
-                    application_index_of_nearest_event = i
+        application_index_of_nearest_event = sorted_app_ids[0]
+        nearest_event_time = times_of_unprocessed_events_by_application_indexes[sorted_app_ids[0]]
 
         # Поступление заявки в систему
         if applications_statuses[application_index_of_nearest_event] == NOT_RECEIVED:
@@ -79,6 +78,19 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
         else:  # на орбиту
             times_of_unprocessed_events_by_application_indexes[
                 application_index_of_nearest_event] += get_orbit_time()
+
+        sorted_app_ids.pop(0)
+        if applications_statuses[application_index_of_nearest_event] != COMPLETED:
+            next_nearest_event_time = times_of_unprocessed_events_by_application_indexes[
+                    application_index_of_nearest_event]
+            for i in range(len(sorted_app_ids)):
+                if next_nearest_event_time < times_of_unprocessed_events_by_application_indexes[sorted_app_ids[i]]:
+                    sorted_app_ids.insert(i, application_index_of_nearest_event)
+                    break
+            else:
+                sorted_app_ids.append(application_index_of_nearest_event)
+
+        # print(application_count, len(sorted_app_ids), completed_applications_count)
 
         collected_data["events_data"].append(
             {

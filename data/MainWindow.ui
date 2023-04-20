@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>597</width>
-    <height>452</height>
+    <width>676</width>
+    <height>438</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -20,7 +20,7 @@
    <string>MainWindow</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: &quot;white&quot;;</string>
+   <string notr="true">QMainWindow {background-color: &quot;white&quot;}</string>
   </property>
   <property name="tabShape">
    <enum>QTabWidget::Triangular</enum>
@@ -77,7 +77,9 @@
          </sizepolicy>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color: &quot;white&quot;;</string>
+         <string notr="true">QFrame {
+background-color: &quot;white&quot;;
+}</string>
         </property>
         <property name="frameShape">
          <enum>QFrame::StyledPanel</enum>
@@ -113,7 +115,7 @@
             <enum>QLayout::SetFixedSize</enum>
            </property>
            <item>
-            <spacer name="verticalSpacer_1">
+            <spacer name="verticalSpacer_2">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -122,8 +124,34 @@
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>5</width>
-               <height>20</height>
+               <width>10</width>
+               <height>10</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>10</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_6">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>10</height>
               </size>
              </property>
             </spacer>
@@ -136,6 +164,66 @@
              <property name="sizeConstraint">
               <enum>QLayout::SetMinimumSize</enum>
              </property>
+             <item>
+              <widget class="QLabel" name="label_choise">
+               <property name="text">
+                <string>Выберите:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="comboBox_2">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>133</width>
+                 <height>22</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>133</width>
+                 <height>22</height>
+                </size>
+               </property>
+               <item>
+                <property name="text">
+                 <string>Алгоритм1</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Алгоритм2</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Алгоритм3</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>5</width>
+                 <height>10</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
              <item>
               <widget class="QLabel" name="label_parameters">
                <property name="text">
@@ -369,17 +457,14 @@
             </layout>
            </item>
            <item>
-            <spacer name="verticalSpacer_2">
+            <spacer name="verticalSpacer_4">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>5</width>
-               <height>100</height>
+               <width>20</width>
+               <height>10</height>
               </size>
              </property>
             </spacer>

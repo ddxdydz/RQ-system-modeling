@@ -6,7 +6,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from pyqtgraph import mkBrush, mkPen
 
-from algorithms.alg1 import main as alg1
+from algorithms.alg1_2 import main as alg1
 
 
 class MainWindow(QMainWindow):
@@ -222,9 +222,9 @@ class MainWindow(QMainWindow):
         self.handler_status_graphic.clear()
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Enter - 1:
+        if event.key() == QtCore.Qt.Key.Key_Enter - 1:
             self.launch()
-        if event.key() == QtCore.Qt.Key_F5:
+        if event.key() == QtCore.Qt.Key.Key_F5:
             self.application_count_graphic.autoRange()
             self.handler_status_graphic.autoRange()
 
