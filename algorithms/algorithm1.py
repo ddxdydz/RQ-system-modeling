@@ -2,7 +2,7 @@ from random import random
 from math import log
 from time import time
 
-from data.constants import *
+from constants import *
 
 
 # Статусы заявок
@@ -113,7 +113,6 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
                 last_progress_value = progress
                 print(progress)
             if number_of_iterations > ITERATION_LIMIT_COUNT and progress < 5:
-                print("ERR")
                 collected_data["status"] = ITERATION_LIMIT
                 return collected_data
 

@@ -144,19 +144,6 @@ background-color: &quot;white&quot;;
             </spacer>
            </item>
            <item>
-            <spacer name="verticalSpacer_6">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>10</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
             <layout class="QVBoxLayout" name="verticalLayout_input_panel">
              <property name="spacing">
               <number>8</number>
@@ -164,66 +151,6 @@ background-color: &quot;white&quot;;
              <property name="sizeConstraint">
               <enum>QLayout::SetMinimumSize</enum>
              </property>
-             <item>
-              <widget class="QLabel" name="label_choise">
-               <property name="text">
-                <string>Выберите:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QComboBox" name="comboBox_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>133</width>
-                 <height>22</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>133</width>
-                 <height>22</height>
-                </size>
-               </property>
-               <item>
-                <property name="text">
-                 <string>Алгоритм1</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Алгоритм2</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Алгоритм3</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item>
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Fixed</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>5</width>
-                 <height>10</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
              <item>
               <widget class="QLabel" name="label_parameters">
                <property name="text">
