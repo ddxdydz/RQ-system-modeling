@@ -3,10 +3,13 @@ import sys
 from PyQt5 import uic
 from PyQt5 import QtCore
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QMainWindow, QApplication
-from pyqtgraph import mkBrush, mkPen
+from PyQt5.QtWidgets import (
+    QMainWindow, QApplication,
+    QProgressBar, QLabel, QPushButton)
+from pyqtgraph import (mkBrush, mkPen)
 
-from algorithms.alg1_2 import main as alg1
+from data.constants import *
+from algorithms.alg1_1 import main as alg1
 
 
 class MainWindow(QMainWindow):
@@ -36,13 +39,26 @@ class MainWindow(QMainWindow):
         # В этом случае управление вернёться к основному циклу обработки событий после запуска потока.
         # Это делается для возможности обновления графического интерфейса без ожидания окончания симуляции.
 
+        self.progressBar = QProgressBar()
+        self.label_message = QLabel()
+        self.stop_button = QPushButton()
         self.init_ui()
-        self.launch()
 
     def init_ui(self):
         uic.loadUi(r'data\MainWindow.ui', self)
-        self.setWindowIcon(QIcon(r'data\app_icon.ico'))
+        self.setWindowIcon(QIcon(r'data\icons\app_icon.ico'))
         self.setWindowTitle("Имитационное моделирование систем массового обслуживания")
+
+        # Настройка панели состояния:
+        self.update_message("Готов...")
+        self.progressBar.setFixedHeight(13)
+        self.progressBar.setFixedWidth(150)
+        self.stop_button.setText("×")
+        self.stop_button.setFixedHeight(15)
+        self.stop_button.setFixedWidth(15)
+        self.statusBar.addWidget(self.label_message)
+        self.statusBar.addWidget(self.stop_button)
+        self.statusBar.addWidget(self.progressBar)
 
         # Добавление параметров по умолчанию в строки ввода:
         self.lineEdit_lm_value.setText(str(self.parameters["lm"]))
@@ -50,8 +66,9 @@ class MainWindow(QMainWindow):
         self.lineEdit_sg_value.setText(str(self.parameters["sg"]))
         self.lineEdit_count_value.setText(str(self.parameters["application_count"]))
 
-        # При нажатии на кнопку "запуск" будет вызвана функция self.launch:
-        self.pushButton.clicked.connect(self.launch)
+        # Подключение кнопок к вызываемым функциям:
+        self.lunch_button.clicked.connect(self.launch)
+        self.stop_button.clicked.connect(self.stop)
 
         # После завершения алгоритма будут вызваны переданные функции:
         self.thread_alg1.finished.connect(lambda: self.process_the_collected_data())
@@ -74,6 +91,8 @@ class MainWindow(QMainWindow):
             bottom_label="Время (секунды)"
         )
 
+        self.to_based_widgets_state()
+
     def init_graphic_ui(self, graphic_obj, title=None, left_label=None, bottom_label=None):
         graphic_obj.addLegend()
         graphic_obj.setBackground('w')
@@ -90,34 +109,49 @@ class MainWindow(QMainWindow):
     def launch(self):
         if not self.thread_alg1.isRunning():
             try:
-                self.clear_message()
                 self.update_parameters()
                 self.check_parameters_range()
-                self.pushButton.setEnabled(False)
-                if self.parameters["application_count"] > 101:
-                    self.pushButton.hide()
-                    self.progressBar.show()
+                self.lunch_button.setEnabled(False)
+                self.progressBar.show()
+                self.stop_button.show()
+                self.update_message("Обработка...")
                 # Запуск алгоритма в отдельном процессе:
                 self.thread_alg1.set_parameters(self.parameters)
                 self.thread_alg1.start()
             except ValueError:
-                self.show_message("Ошибка: \nНекорректные значения")
+                self.update_message("Ошибка: Некорректные значения")
                 self.to_based_widgets_state()
             except RangeError:
-                self.show_message("Ошибка: \nНекорректный диапазон")
+                self.update_message("Ошибка: Некорректный диапазон")
                 self.to_based_widgets_state()
+
+    def stop(self):
+        self.thread_alg1.terminate()
+        self.to_based_widgets_state()
 
     def process_the_collected_data(self):
         # Обрабатываем собранные значения и строим на их основе графики:
-        collected_data_alg1 = self.thread_alg1.results
-        self.update_data_for_graphics(collected_data_alg1)
-        self.update_graphic_widgets()
+        results = self.thread_alg1.results
+
+        if results["status"] == ITERATION_LIMIT:
+            self.update_message("Превышено количество итераций. Проверьте введённые значения")
+            self.to_based_widgets_state()
+        elif results["status"] == TERMITE:
+            self.update_message("Обработка отменена")
+            self.to_based_widgets_state()
+        else:
+            self.update_data_for_graphics(results["events_data"])
+            self.update_graphic_widgets()
+            working_time = round(results['algorithm_working_time'], 3)
+            if working_time < 0.01:
+                working_time = 0.01
+            self.update_message(f"Обработка завершена за {working_time} сек. ")
 
     def to_based_widgets_state(self):
-        self.pushButton.show()
-        self.pushButton.setEnabled(True)
-        self.progressBar.setValue(0)
+        self.lunch_button.setEnabled(True)
         self.progressBar.hide()
+        self.progressBar.setValue(0)
+        self.stop_button.hide()
 
     def update_parameters(self):
         self.parameters["lm"] = float(self.lineEdit_lm_value.text().replace(',', '.'))
@@ -126,46 +160,40 @@ class MainWindow(QMainWindow):
         self.parameters["application_count"] = int(self.lineEdit_count_value.text())
 
     def check_parameters_range(self):
-        if not (0 < self.parameters["application_count"] <= 400 and
+        if not (0 < self.parameters["application_count"] <= 100000 and
                 0 < self.parameters["lm"] and
                 0 < self.parameters["mu"] and
                 0 < self.parameters["sg"]):
             raise RangeError
 
-    def show_message(self, text):
-        self.label_message.show()
-        self.label_message.setText(text)
-
-    def clear_message(self):
-        self.label_message.hide()
-        self.label_message.setText("")
+    def update_message(self, text):
+        self.label_message.setText(f"  {text}   ")
 
     def update_data_for_graphics(self, collected_data):
         self.clear_graphic_data()
-        collected_events_data = collected_data["events_data"]
 
         # Формируем данные для построения гистограмм из собранных значений:
-        for i in range(1, len(collected_events_data)):
+        for i in range(1, len(collected_data)):
 
             # Формирование данных для гистограммы, показывающей изменение количества заявок по времени:
-            if collected_events_data[i - 1]["values"]["app_count"] != \
-                    collected_events_data[i]["values"]["app_count"]:  # Если есть изменение, то записываем его
+            if collected_data[i - 1]["values"]["app_count"] != \
+                    collected_data[i]["values"]["app_count"]:  # Если есть изменение, то записываем его
                 # Добавляем время, когда произошло изменение:
                 self.data_for_graphics["applications_count_graphic_data"]["time"].append(
-                    collected_events_data[i]["time"])
+                    collected_data[i]["time"])
                 # Добавляем изменённое количество заявок в системе:
                 self.data_for_graphics["applications_count_graphic_data"]["values"].append(
-                    collected_events_data[i]["values"]["app_count"])
+                    collected_data[i]["values"]["app_count"])
 
             # Формирование данных для гистограммы, показывающей изменение статуса обработчика по времени:
-            if collected_events_data[i - 1]["values"]["h_status"] != \
-                    collected_events_data[i]["values"]["h_status"]:  # Если есть изменение, то записываем его
+            if collected_data[i - 1]["values"]["h_status"] != \
+                    collected_data[i]["values"]["h_status"]:  # Если есть изменение, то записываем его
                 # Добавляем время, когда произошло изменение:
                 self.data_for_graphics["handler_statuses_graphic_data"]["time"].append(
-                    collected_events_data[i]["time"])
+                    collected_data[i]["time"])
                 # Добавляем изменённый статус обработчика:
                 self.data_for_graphics["handler_statuses_graphic_data"]["values"].append(
-                    collected_events_data[i]["values"]["h_status"])
+                    collected_data[i]["values"]["h_status"])
 
         # Удаляем последнее значение из данных для графиков для возможности отображения гистограм
         # Это последнее значение равняется изначальному значению и не влияет на общий результат
@@ -236,12 +264,15 @@ class Thread(QtCore.QThread):
         super(Thread, self).__init__()
         self.algorithm = algorithm
         self.parameters = parameters
-        self.results = None
+        self.results = dict()
 
     def set_parameters(self, parameters):
         self.parameters = parameters
 
     def run(self):
+        # В случае если процесс будет принудительно остановлен:
+        self.results["status"] = TERMITE
+        # Запус процесса:
         self.results = self.algorithm(
             **self.parameters,
             signal_to_change_progress_value=self.change_value
@@ -249,6 +280,10 @@ class Thread(QtCore.QThread):
 
 
 class RangeError(Exception):
+    pass
+
+
+class IterationError(Exception):
     pass
 
 

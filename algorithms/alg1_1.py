@@ -2,14 +2,16 @@ from random import random
 from math import log
 from time import time
 
+from data.constants import *
+
 
 # Статусы заявок
 NOT_RECEIVED = 1352  # Не принято в обработку
-ACTIVE = 2536  # Находится в системе / активно
-COMPLETED = 7435  # Завершено / обработано
+ACTIVE = 1536  # Находится в системе / активно
+COMPLETED = 1435  # Завершено / обработано
 # Статусы обработчика
-FREE = 9643  # Свободно
-PROCESSING = 6366  # В обработке / занято
+FREE = 2643  # Свободно
+PROCESSING = 2366  # В обработке / занято
 
 
 def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
@@ -18,6 +20,7 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
         "algorithm_working_time": None
     }
     start_algorithm_working_time = time()
+    number_of_iterations = 0
     last_progress_value = 0
 
     def get_arrival_time() -> float:
@@ -79,18 +82,18 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
             times_of_unprocessed_events_by_application_indexes[
                 application_index_of_nearest_event] += get_orbit_time()
 
+        # Обновление отсортированного списка индексов sorted_app_ids:
         sorted_app_ids.pop(0)
         if applications_statuses[application_index_of_nearest_event] != COMPLETED:
             next_nearest_event_time = times_of_unprocessed_events_by_application_indexes[
                     application_index_of_nearest_event]
             for i in range(len(sorted_app_ids)):
+                number_of_iterations += 1
                 if next_nearest_event_time < times_of_unprocessed_events_by_application_indexes[sorted_app_ids[i]]:
                     sorted_app_ids.insert(i, application_index_of_nearest_event)
                     break
             else:
                 sorted_app_ids.append(application_index_of_nearest_event)
-
-        # print(application_count, len(sorted_app_ids), completed_applications_count)
 
         collected_data["events_data"].append(
             {
@@ -102,17 +105,24 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
                     }
             }
         )
+
         if signal_to_change_progress_value is not None:
             progress = int(completed_applications_count * 100 / application_count)
             if progress != last_progress_value and progress % 5 == 0:
                 signal_to_change_progress_value.emit(progress)
                 last_progress_value = progress
                 print(progress)
+            if number_of_iterations > ITERATION_LIMIT_COUNT and progress < 5:
+                print("ERR")
+                collected_data["status"] = ITERATION_LIMIT
+                return collected_data
 
+    collected_data["number_of_iterations"] = number_of_iterations
     collected_data["algorithm_working_time"] = time() - start_algorithm_working_time
+    collected_data["status"] = -1
     return collected_data
 
 
 if __name__ == '__main__':
-    result = main(application_count=300, lm=3, mu=1, sg=1)
-    print(result["algorithm_working_time"])
+    result = main(application_count=200, lm=3, mu=1, sg=1)
+    print(result["algorithm_working_time"], result["number_of_iterations"])
