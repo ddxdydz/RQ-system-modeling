@@ -35,7 +35,7 @@ ALGORITHM_1_SETTINGS = {
     "GRAPHICS_SETTINGS": {
 
         "application_count_graphic": {
-            "title": "Изменение параметров системы",
+            "title": "Изменение количества заявок",
             "styles_title": {"color": "b", "font-size": "15pt"},
             "left_label": "Количество заявок в системе",
             "bottom_label": None,
@@ -52,8 +52,7 @@ ALGORITHM_1_SETTINGS = {
         },
 
         "handler_status_graphic": {
-            # "title": "Изменение статуса обработчика",
-            "title": None,
+            "title": "Изменение статуса обработчика",
             "styles_title": {"color": "b", "font-size": "15pt"},
             "left_label": "Статус",
             "bottom_label": None,
@@ -70,8 +69,7 @@ ALGORITHM_1_SETTINGS = {
         },
 
         "handler_percent_graphic": {
-            # "title": "Вероятность занятости обработчка",
-            "title": None,
+            "title": "Вероятность занятости обработчка",
             "styles_title": {"color": "b", "font-size": "15pt"},
             "left_label": "Вероятность (%)",
             "bottom_label": "Время (секунды)",
@@ -90,11 +88,11 @@ ALGORITHM_1_SETTINGS = {
 
     "GRAPHICS_LAYOUT_STRETCH": {
 
-        "application_count_graphic": 4,
+        "application_count_graphic": 6,
 
-        "handler_status_graphic": 1,
+        "handler_status_graphic": 3,
 
-        "handler_percent_graphic": 2
+        "handler_percent_graphic": 4
 
     }
 }

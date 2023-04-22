@@ -44,6 +44,7 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
 
     completed_applications_count = 0  # Количество обработанных заявок
     active_applications_count = 0  # Количество заявок, находящихся в системе
+    last_nearest_event_time = 0
     sum_time_processing = 0
 
     handler_status = FREE
@@ -69,6 +70,7 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
         # Находим индекс заявки, участвующей в необработанном событии, которое наступает раньше остальных:
         application_index_of_nearest_event = sorted_app_ids[0]
         nearest_event_time = times_of_unprocessed_events_by_application_indexes[sorted_app_ids[0]]
+        last_handler_status = handler_status
 
         # Поступление заявки в систему
         if applications_statuses[application_index_of_nearest_event] == NOT_RECEIVED:
@@ -82,7 +84,6 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
             delta_handler_time = get_handler_time()
             times_of_unprocessed_events_by_application_indexes[
                 application_index_of_nearest_event] += delta_handler_time
-            sum_time_processing += delta_handler_time
         # Если прибор был занят текущей заявкой, то освобождаем его
         elif handler_status == PROCESSING and \
                 handler_application_id == application_index_of_nearest_event:
@@ -97,9 +98,9 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
 
         # Обновление отсортированного списка индексов sorted_app_ids:
         sorted_app_ids.pop(0)
+        next_nearest_event_time = times_of_unprocessed_events_by_application_indexes[
+            application_index_of_nearest_event]
         if applications_statuses[application_index_of_nearest_event] != COMPLETED:
-            next_nearest_event_time = times_of_unprocessed_events_by_application_indexes[
-                    application_index_of_nearest_event]
             for i in range(len(sorted_app_ids)):
                 number_of_iterations += 1
                 if next_nearest_event_time < times_of_unprocessed_events_by_application_indexes[sorted_app_ids[i]]:
@@ -108,6 +109,10 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
             else:
                 sorted_app_ids.append(application_index_of_nearest_event)
 
+        if last_handler_status == PROCESSING:
+            sum_time_processing += nearest_event_time - last_nearest_event_time
+        last_nearest_event_time = nearest_event_time
+
         collected_data["events_data"].append(
             {
                 "time": nearest_event_time,
@@ -115,7 +120,7 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
                     {
                         "application_count_graphic": active_applications_count,
                         "handler_status_graphic": int(handler_status == PROCESSING),
-                        "handler_percent_graphic": int(sum_time_processing / nearest_event_time) * 100
+                        "handler_percent_graphic": int(sum_time_processing * 100 / nearest_event_time)
                     }
             }
         )
@@ -137,5 +142,5 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
 
 
 if __name__ == '__main__':
-    result = main(application_count=200, lm=3, mu=1, sg=1)
+    result = main(application_count=4, lm=3, mu=1, sg=1)
     print(result["algorithm_working_time"], result["number_of_iterations"])

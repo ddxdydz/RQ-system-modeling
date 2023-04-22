@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
         uic.loadUi(r'data\MainWindow.ui', self)
         self.setWindowIcon(QIcon(r'data\icons\app_icon.ico'))
         self.setWindowTitle("Имитационное моделирование систем массового обслуживания")
-        self.setFixedSize(750, 500)  # TODO
+        self.setFixedSize(680, 400)  # TODO
 
         # Настройка панели состояния:
         self.update_message("Готов...")
@@ -179,7 +179,7 @@ class MainWindow(QMainWindow):
     def update_graphic_widgets(self, collected_data):
         data_for_graphics = dict()
         for key in ALGORITHM_1_SETTINGS["GRAPHICS_KEYS"]:
-            data_for_graphics[key] = {"time": [], "values": []}
+            data_for_graphics[key] = {"time": [0], "values": [0]}
 
         # Формируем данные для построения гистограмм из собранных значений:
         for i in range(1, len(collected_data)):
