@@ -25,9 +25,9 @@ ALGORITHM_1_SETTINGS = {
 
     "PARAMETERS_RANGE": {
         "application_count": {"min": 0, "max": 100000},
-        "lm": {"min": 0, "max": 999},
-        "mu": {"min": 0, "max": 999},
-        "sg": {"min": 0, "max": 999}
+        "lm": {"min": 0.001, "max": 999},
+        "mu": {"min": 0.001, "max": 999},
+        "sg": {"min": 0.001, "max": 999}
     },
 
     "GRAPHICS_KEYS": ("application_count_graphic", "handler_status_graphic", "handler_percent_graphic"),
