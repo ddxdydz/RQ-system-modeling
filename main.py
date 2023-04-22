@@ -47,6 +47,7 @@ class MainWindow(QMainWindow):
         uic.loadUi(r'data\MainWindow.ui', self)
         self.setWindowIcon(QIcon(r'data\icons\app_icon.ico'))
         self.setWindowTitle("Имитационное моделирование систем массового обслуживания")
+        self.setMinimumSize(480, 300)
 
         # Настройка панели состояния:
         self.update_message("Готов...")
@@ -241,7 +242,9 @@ class Graphic(PlotWidget):
 
     def set_left_ticks_view(self, data_for_graphic):
         ay = self.getAxis('left')
-        max_elem = max(data_for_graphic["values"])
+        max_elem = self.view_settings["maximum_value"]
+        if max_elem is None:
+            max_elem = max(data_for_graphic["values"])
         step = 1
         max_count_of_left_ticks = self.view_settings["max_count_of_left_ticks"]
         if max_elem > max_count_of_left_ticks:
