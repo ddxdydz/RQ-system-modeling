@@ -40,7 +40,7 @@ ALGORITHM_1_SETTINGS = {
             "left_label": "Количество заявок в системе",
             "bottom_label": None,
             "styles_labels": {"color": "#f00", "font-size": "8pt"},
-            "max_count_of_left_ticks": 15,
+            "max_count_of_left_ticks": 8,
             "width_left_axis_px": 35,
             "maximum_value": None,
             "background_style": "w",

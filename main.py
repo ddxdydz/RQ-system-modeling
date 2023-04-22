@@ -48,6 +48,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon(r'data\icons\app_icon.ico'))
         self.setWindowTitle("Имитационное моделирование систем массового обслуживания")
         self.setMinimumSize(480, 300)
+        self.resize(680, 400)
 
         # Настройка панели состояния:
         self.update_message("Готов...")
