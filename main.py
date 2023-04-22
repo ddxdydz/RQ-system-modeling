@@ -2,14 +2,17 @@ import sys
 
 from PyQt5 import uic
 from PyQt5 import QtCore
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import (
-    QMainWindow, QApplication,
-    QProgressBar, QLabel, QPushButton)
-from pyqtgraph import (mkBrush, mkPen)
+    QMainWindow, QApplication, QHBoxLayout, QSpacerItem,
+    QProgressBar, QLabel, QPushButton, QLineEdit)
+from PyQt5.QtWidgets import QSizePolicy
+from pyqtgraph import (
+    mkBrush, mkPen, PlotWidget)
 
 from constants import *
 from algorithms.algorithm1 import main as alg1
+from algorithms.algorithm1_settings import *
 
 
 class MainWindow(QMainWindow):
@@ -17,38 +20,35 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
 
         # Создание списка параметров для выполнения алгоритма:
-        self.parameters = {
-            "application_count": 4,
-            "lm": 3.0,
-            "mu": 1.0,
-            "sg": 1.0
-        }
+        self.parameters = ALGORITHM_1_SETTINGS["PARAMETERS_DEFAULT_VALUES"]
 
-        # Данные для построения графиков (гистограмм):
-        self.data_for_graphics = {
-            "handler_statuses_graphic_data": {"time": [], "values": []},
-            "applications_count_graphic_data": {"time": [], "values": []}
-        }
-
-        # Параметры отображения графиков:
-        self.max_count_of_left_ticks = 15
-        self.width_left_axis_px = 35
+        # Словарь виджетов для ввода параметров:
+        self.parameter_input_widgets = dict()
 
         # Выносим процесс вычисления результатов симуляции в отдельный поток для разгрузки основного цикла:
         self.thread_alg1 = Thread(alg1, self.parameters)
         # В этом случае управление вернёться к основному циклу обработки событий после запуска потока.
         # Это делается для возможности обновления графического интерфейса без ожидания окончания симуляции.
 
+        # Словарь виджетов для отображения графиков::
+        self.graphic_widgets = dict()
+        for key in ALGORITHM_1_SETTINGS["GRAPHICS_KEYS"]:
+            self.graphic_widgets[key] = \
+                Graphic(ALGORITHM_1_SETTINGS["GRAPHICS_SETTINGS"][key])
+
+        # Инициализация виджетов для панели состояния:
         self.progressBar = QProgressBar()
         self.label_message = QLabel()
         self.stop_button = QPushButton()
 
+        # Инициализация интерфейса главного окна:
         self.init_ui()
 
     def init_ui(self):
         uic.loadUi(r'data\MainWindow.ui', self)
         self.setWindowIcon(QIcon(r'data\icons\app_icon.ico'))
         self.setWindowTitle("Имитационное моделирование систем массового обслуживания")
+        self.setFixedSize(750, 500)  # TODO
 
         # Настройка панели состояния:
         self.update_message("Готов...")
@@ -61,57 +61,55 @@ class MainWindow(QMainWindow):
         self.statusBar.addWidget(self.stop_button)
         self.statusBar.addWidget(self.progressBar)
 
-        # Добавление параметров по умолчанию в строки ввода:
-        self.lineEdit_lm_value.setText(str(self.parameters["lm"]))
-        self.lineEdit_mu_value.setText(str(self.parameters["mu"]))
-        self.lineEdit_sg_value.setText(str(self.parameters["sg"]))
-        self.lineEdit_count_value.setText(str(self.parameters["application_count"]))
-
         # Подключение кнопок к вызываемым функциям:
         self.lunch_button.clicked.connect(self.launch)
         self.stop_button.clicked.connect(self.stop)
 
         # После завершения алгоритма будут вызваны переданные функции:
-        self.thread_alg1.finished.connect(lambda: self.process_the_collected_data())
+        self.thread_alg1.finished.connect(lambda: self.process_results())
         self.thread_alg1.finished.connect(lambda: self.to_based_widgets_state())
 
         # Подключение функции для возможности её вызова из потока по сигналу:
         self.thread_alg1.change_value.connect(self.progressBar.setValue)
 
-        # Инициализация интерфейса графических виджетов:
-        self.init_graphic_ui(
-            self.application_count_graphic,
-            title="Изменение количества заявок",
-            left_label="Количество заявок в системе",
-            bottom_label="Время (секунды)"
-        )
-        self.init_graphic_ui(
-            self.handler_status_graphic,
-            title="Изменение статуса обработчика",
-            left_label="Статус",
-            bottom_label="Время (секунды)"
-        )
+        # Добавление графических виджетов на главный экран:
+        for key in ALGORITHM_1_SETTINGS["GRAPHICS_KEYS"]:
+            self.verticalLayout_graphic_widgets.addWidget(
+                self.graphic_widgets[key],
+                ALGORITHM_1_SETTINGS["GRAPHICS_LAYOUT_STRETCH"][key],
+                QtCore.Qt.AlignmentFlag.AlignTop
+            )
+
+        # Инициализация виджетов для ввода параметров:
+        for parameter_key in ALGORITHM_1_SETTINGS["PARAMETERS_KEYS"]:
+            parameter_label_text = ALGORITHM_1_SETTINGS["PARAMETERS_LABELS"][parameter_key]
+            parameter_value = ALGORITHM_1_SETTINGS["PARAMETERS_DEFAULT_VALUES"][parameter_key]
+            parameter_label_widget = QLabel()
+            parameter_label_widget.setText(parameter_label_text)
+            parameter_line_edit_widget = QLineEdit()
+            self.parameter_input_widgets[parameter_key] = parameter_line_edit_widget
+            parameter_line_edit_widget.setText(str(parameter_value))
+            if len(parameter_label_text) == 2:  # Если описание параметра имеет вид: "<символ>:"
+                parameter_label_widget.setFont(QFont('MS Shell Dlg 2', 10))
+                parameter_line_edit_widget.setFixedWidth(100)
+                parameter_line_edit_widget.setFixedHeight(20)
+                parameter_layout = QHBoxLayout()
+                parameter_layout.addWidget(parameter_label_widget)
+                parameter_layout.addWidget(parameter_line_edit_widget)
+                self.verticalLayout_parameters.addLayout(parameter_layout)
+            else:
+                parameter_line_edit_widget.setFixedWidth(133)
+                parameter_line_edit_widget.setFixedHeight(20)
+                self.verticalLayout_parameters.addItem(
+                    QSpacerItem(20, 10, QSizePolicy.Fixed, QSizePolicy.Fixed))
+                self.verticalLayout_parameters.addWidget(parameter_label_widget)
+                self.verticalLayout_parameters.addWidget(parameter_line_edit_widget)
 
         self.to_based_widgets_state()
-
-    def init_graphic_ui(self, graphic_obj, title=None, left_label=None, bottom_label=None):
-        graphic_obj.addLegend()
-        graphic_obj.setBackground('w')
-        styles_title = {"color": "b", "font-size": "15pt"}
-        graphic_obj.setTitle(title, **styles_title)
-        styles_labels = {"color": "#f00", "font-size": "8pt"}
-        graphic_obj.setLabel("left", left_label, **styles_labels)
-        graphic_obj.setLabel("bottom", bottom_label, **styles_labels)
-        ay = graphic_obj.getAxis('left')
-        ay.setWidth(w=self.width_left_axis_px)
-        graphic_obj.showGrid(x=True, y=True)
-        graphic_obj.setMouseEnabled(x=True, y=False)
-        graphic_obj.getPlotItem().setMenuEnabled(False)
 
     def launch(self):
         if not self.thread_alg1.isRunning():
             try:
-                self.clear_graphic_widgets()
                 self.check_parameters_fullness()
                 self.update_parameters()
                 self.check_parameters_range()
@@ -136,10 +134,31 @@ class MainWindow(QMainWindow):
         self.thread_alg1.terminate()
         self.to_based_widgets_state()
 
-    def process_the_collected_data(self):
+    def update_parameters(self):
+        for parameter_key in ALGORITHM_1_SETTINGS["PARAMETERS_KEYS"]:
+            value_type = ALGORITHM_1_SETTINGS["PARAMETERS_TYPES"][parameter_key]
+            input_widget = self.parameter_input_widgets[parameter_key]
+            self.parameters[parameter_key] = value_type(input_widget.text().replace(',', '.'))
+
+    def update_message(self, text):
+        self.label_message.setText(f"  {text}   ")
+
+    def check_parameters_fullness(self):
+        for parameter_key in ALGORITHM_1_SETTINGS["PARAMETERS_KEYS"]:
+            input_widget = self.parameter_input_widgets[parameter_key]
+            if input_widget.text().strip() == "":
+                raise FullnessError
+
+    def check_parameters_range(self):
+        for parameter_key in ALGORITHM_1_SETTINGS["PARAMETERS_KEYS"]:
+            min_value = ALGORITHM_1_SETTINGS["PARAMETERS_RANGE"][parameter_key]["min"]
+            max_value = ALGORITHM_1_SETTINGS["PARAMETERS_RANGE"][parameter_key]["max"]
+            if not (min_value < self.parameters[parameter_key] <= max_value):
+                raise RangeError
+
+    def process_results(self):
         # Обрабатываем собранные значения и строим на их основе графики:
         results = self.thread_alg1.results
-
         if results["status"] == ITERATION_LIMIT:
             self.update_message("Превышено количество итераций. Проверьте введённые значения")
             self.to_based_widgets_state()
@@ -147,12 +166,9 @@ class MainWindow(QMainWindow):
             self.update_message("Обработка отменена")
             self.to_based_widgets_state()
         else:
-            self.update_data_for_graphics(results["events_data"])
-            self.update_graphic_widgets()
-            working_time = round(results['algorithm_working_time'], 3)
-            if working_time < 0.01:
-                working_time = 0.01
-            self.update_message(f"Обработка завершена за {working_time} сек. ")
+            work_time = round(results['algorithm_working_time'], 3)
+            self.update_message(f"Обработка завершена за {work_time if work_time >= 0.01 else 0.01} сек. ")
+            self.update_graphic_widgets(results["events_data"])
 
     def to_based_widgets_state(self):
         self.lunch_button.setEnabled(True)
@@ -160,114 +176,101 @@ class MainWindow(QMainWindow):
         self.progressBar.setValue(0)
         self.stop_button.hide()
 
-    def update_parameters(self):
-        self.parameters["lm"] = float(self.lineEdit_lm_value.text().replace(',', '.'))
-        self.parameters["mu"] = float(self.lineEdit_mu_value.text().replace(',', '.'))
-        self.parameters["sg"] = float(self.lineEdit_sg_value.text().replace(',', '.'))
-        self.parameters["application_count"] = int(self.lineEdit_count_value.text())
-
-    def check_parameters_fullness(self):
-        values = (self.lineEdit_lm_value.text(),
-                  self.lineEdit_mu_value.text(),
-                  self.lineEdit_sg_value.text())
-        if not all(map(lambda value: value.strip(), values)):
-            raise FullnessError
-
-    def check_parameters_range(self):
-        if not (0 < self.parameters["application_count"] <= 100000 and
-                0 < self.parameters["lm"] and
-                0 < self.parameters["mu"] and
-                0 < self.parameters["sg"]):
-            raise RangeError
-
-    def update_message(self, text):
-        self.label_message.setText(f"  {text}   ")
-
-    def update_data_for_graphics(self, collected_data):
-        self.clear_graphic_data()
+    def update_graphic_widgets(self, collected_data):
+        data_for_graphics = dict()
+        for key in ALGORITHM_1_SETTINGS["GRAPHICS_KEYS"]:
+            data_for_graphics[key] = {"time": [], "values": []}
 
         # Формируем данные для построения гистограмм из собранных значений:
         for i in range(1, len(collected_data)):
-
-            # Формирование данных для гистограммы, показывающей изменение количества заявок по времени:
-            if collected_data[i - 1]["values"]["app_count"] != \
-                    collected_data[i]["values"]["app_count"]:  # Если есть изменение, то записываем его
-                # Добавляем время, когда произошло изменение:
-                self.data_for_graphics["applications_count_graphic_data"]["time"].append(
-                    collected_data[i]["time"])
-                # Добавляем изменённое количество заявок в системе:
-                self.data_for_graphics["applications_count_graphic_data"]["values"].append(
-                    collected_data[i]["values"]["app_count"])
-
-            # Формирование данных для гистограммы, показывающей изменение статуса обработчика по времени:
-            if collected_data[i - 1]["values"]["h_status"] != \
-                    collected_data[i]["values"]["h_status"]:  # Если есть изменение, то записываем его
-                # Добавляем время, когда произошло изменение:
-                self.data_for_graphics["handler_statuses_graphic_data"]["time"].append(
-                    collected_data[i]["time"])
-                # Добавляем изменённый статус обработчика:
-                self.data_for_graphics["handler_statuses_graphic_data"]["values"].append(
-                    collected_data[i]["values"]["h_status"])
+            for key in ALGORITHM_1_SETTINGS["GRAPHICS_KEYS"]:
+                # Если рассматриваемое значение изменилось, то фиксируем его:
+                if collected_data[i - 1]["values"][key] != collected_data[i]["values"][key]:
+                    data_for_graphics[key]["time"].append(collected_data[i]["time"])
+                    data_for_graphics[key]["values"].append(collected_data[i]["values"][key])
 
         # Удаляем последнее значение из данных для графиков для возможности отображения гистограм
         # Это последнее значение равняется изначальному значению и не влияет на общий результат
-        self.data_for_graphics["handler_statuses_graphic_data"]["values"].pop(-1)
-        self.data_for_graphics["applications_count_graphic_data"]["values"].pop(-1)
+        for key in ALGORITHM_1_SETTINGS["GRAPHICS_KEYS"]:
+            if ALGORITHM_1_SETTINGS["GRAPHICS_SETTINGS"][key]["type"] == "histogram":
+                data_for_graphics[key]["values"].pop(-1)
 
-    def clear_graphic_data(self):
-        self.data_for_graphics["handler_statuses_graphic_data"]["time"].clear()
-        self.data_for_graphics["handler_statuses_graphic_data"]["values"].clear()
-        self.data_for_graphics["applications_count_graphic_data"]["time"].clear()
-        self.data_for_graphics["applications_count_graphic_data"]["values"].clear()
-
-    def update_graphic_widgets(self):
-        self.clear_graphic_widgets()
-        self.add_histogram(
-            self.application_count_graphic,
-            data_name="applications_count_graphic_data",
-            brush=mkBrush(0, 0, 255, 80),
-            pen=mkPen(0, 0, 0)
-        )
-        self.add_histogram(
-            self.handler_status_graphic,
-            data_name="handler_statuses_graphic_data",
-            brush=mkBrush(255, 0, 0, 80),
-            pen=mkPen(0, 0, 0)
-        )
-
-    def add_histogram(self, graphic_obj, data_name, brush, pen):
-        graphic_obj.plot(
-            self.data_for_graphics[data_name]["time"],
-            self.data_for_graphics[data_name]["values"],
-            stepMode="center",
-            fillLevel=0,
-            fillOutline=True,
-            brush=brush,
-            pen=pen,
-        )
-        self.set_left_view_values(graphic_obj, data_name)
-        graphic_obj.autoRange()
-
-    def set_left_view_values(self, graphic_obj, data_name):
-        ay = graphic_obj.getAxis('left')
-        graphic_values = self.data_for_graphics[data_name]["values"]
-        max_elem = max(graphic_values)
-        step = 1
-        if max_elem > self.max_count_of_left_ticks:
-            step = max_elem // self.max_count_of_left_ticks
-        ticks = [i for i in range(0, max_elem + 1, step)]
-        ay.setTicks([[(v, str(v)) for v in ticks]])
-
-    def clear_graphic_widgets(self):
-        self.application_count_graphic.clear()
-        self.handler_status_graphic.clear()
+        # Строим график по полученным значениям:
+        for key in ALGORITHM_1_SETTINGS["GRAPHICS_KEYS"]:
+            self.graphic_widgets[key].update_graphic_view(data_for_graphics[key])
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key.Key_Enter - 1:
             self.launch()
         if event.key() == QtCore.Qt.Key.Key_F5:
-            self.application_count_graphic.autoRange()
-            self.handler_status_graphic.autoRange()
+            for key in ALGORITHM_1_SETTINGS["GRAPHICS_KEYS"]:
+                self.graphic_widgets[key].autoRange()
+
+
+class Graphic(PlotWidget):
+    def __init__(self, view_setting):
+        super(Graphic, self).__init__()
+        # Параметры отображения графиков:
+        self.view_settings = view_setting
+        # Инициализация интерфейса графического виджета:
+        self.init_widget_ui()
+        self.init_graphic_ui()
+
+    def init_widget_ui(self):
+        sp = self.sizePolicy()
+        sp.setHorizontalPolicy(QSizePolicy.Maximum)
+        sp.setVerticalPolicy(QSizePolicy.Maximum)
+        self.setMinimumHeight(50)
+        self.resize(50, 50)
+
+    def init_graphic_ui(self):
+        self.addLegend()
+        self.setBackground(self.view_settings["background_style"])
+        self.setTitle(
+            self.view_settings["title"],
+            **self.view_settings["styles_title"]
+        )
+        self.setLabel(
+            "left",
+            self.view_settings["left_label"],
+            **self.view_settings["styles_labels"]
+        )
+        self.setLabel(
+            "bottom",
+            self.view_settings["bottom_label"],
+            **self.view_settings["styles_labels"]
+        )
+        ay = self.getAxis('left')
+        ay.setWidth(w=self.view_settings["width_left_axis_px"])
+        self.showGrid(**self.view_settings["show_grid"])
+        self.setMouseEnabled(**self.view_settings["set_mouse_enabled"])
+        self.getPlotItem().setMenuEnabled(False)
+
+    def update_graphic_view(self, data_for_graphic):
+        self.clear()
+        count_x_values = len(data_for_graphic["time"])
+        count_y_values = len(data_for_graphic["values"])
+        self.plot(
+            data_for_graphic["time"],
+            data_for_graphic["values"],
+            stepMode="center" if count_x_values > count_y_values else None,
+            fillLevel=self.view_settings["fillLevel"],
+            fillOutline=True,
+            brush=mkBrush(**self.view_settings["brush_parameters"]),
+            pen=mkPen(**self.view_settings["pen_parameters"]),
+        )
+        self.set_left_ticks_view(data_for_graphic)
+        self.autoRange()
+
+    def set_left_ticks_view(self, data_for_graphic):
+        ay = self.getAxis('left')
+        max_elem = max(data_for_graphic["values"])
+        step = 1
+        max_count_of_left_ticks = self.view_settings["max_count_of_left_ticks"]
+        if max_elem > max_count_of_left_ticks:
+            step = max_elem // max_count_of_left_ticks
+        ticks = [i for i in range(0, max_elem + 1, step)]
+        ay.setTicks([[(v, str(v)) for v in ticks]])
 
 
 class Thread(QtCore.QThread):

@@ -16,7 +16,17 @@ PROCESSING = 2366  # В обработке / занято
 
 def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
     collected_data = {
-        "events_data": [{"time": 0, "values": {"h_status": 0, "app_count": 0}}],
+        "events_data": [
+            {
+                "time": 0,
+                "values":
+                    {
+                        "application_count_graphic": 0,
+                        "handler_status_graphic": 0,
+                        "handler_percent_graphic": 0
+                    }
+            }
+        ],
         "algorithm_working_time": None
     }
     start_algorithm_working_time = time()
@@ -34,6 +44,7 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
 
     completed_applications_count = 0  # Количество обработанных заявок
     active_applications_count = 0  # Количество заявок, находящихся в системе
+    sum_time_processing = 0
 
     handler_status = FREE
     handler_application_id = None  # Индекс заявки, находящейся в обработке
@@ -68,8 +79,10 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
         if handler_status == FREE:
             handler_status = PROCESSING
             handler_application_id = application_index_of_nearest_event
+            delta_handler_time = get_handler_time()
             times_of_unprocessed_events_by_application_indexes[
-                application_index_of_nearest_event] += get_handler_time()
+                application_index_of_nearest_event] += delta_handler_time
+            sum_time_processing += delta_handler_time
         # Если прибор был занят текущей заявкой, то освобождаем его
         elif handler_status == PROCESSING and \
                 handler_application_id == application_index_of_nearest_event:
@@ -100,8 +113,9 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
                 "time": nearest_event_time,
                 "values":
                     {
-                        "h_status": int(handler_status == PROCESSING),
-                        "app_count": active_applications_count
+                        "application_count_graphic": active_applications_count,
+                        "handler_status_graphic": int(handler_status == PROCESSING),
+                        "handler_percent_graphic": int(sum_time_processing / nearest_event_time) * 100
                     }
             }
         )

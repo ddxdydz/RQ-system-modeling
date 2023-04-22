@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>676</width>
-    <height>438</height>
+    <width>603</width>
+    <height>436</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -49,7 +49,7 @@
      <number>0</number>
     </property>
     <item row="0" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout_centralwidget" stretch="0,0,20">
+     <layout class="QHBoxLayout" name="horizontalLayout_centralwidget" stretch="0,0,2">
       <property name="spacing">
        <number>0</number>
       </property>
@@ -131,26 +131,26 @@ background-color: &quot;white&quot;;
             </spacer>
            </item>
            <item>
-            <spacer name="verticalSpacer_3">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>10</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
             <layout class="QVBoxLayout" name="verticalLayout_input_panel">
              <property name="spacing">
               <number>8</number>
              </property>
              <property name="sizeConstraint">
-              <enum>QLayout::SetMinimumSize</enum>
+              <enum>QLayout::SetFixedSize</enum>
              </property>
+             <item>
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>133</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
              <item>
               <widget class="QLabel" name="label_parameters">
                <property name="text">
@@ -163,223 +163,7 @@ background-color: &quot;white&quot;;
                <property name="spacing">
                 <number>8</number>
                </property>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_lm_value">
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <property name="sizeConstraint">
-                  <enum>QLayout::SetFixedSize</enum>
-                 </property>
-                 <item alignment="Qt::AlignLeft">
-                  <widget class="QLabel" name="label_lm_value">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <pointsize>10</pointsize>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>λ:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item alignment="Qt::AlignRight">
-                  <widget class="QLineEdit" name="lineEdit_lm_value">
-                   <property name="enabled">
-                    <bool>true</bool>
-                   </property>
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>50</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>100</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="mouseTracking">
-                    <bool>true</bool>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_mu_value">
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <property name="sizeConstraint">
-                  <enum>QLayout::SetMaximumSize</enum>
-                 </property>
-                 <item alignment="Qt::AlignLeft">
-                  <widget class="QLabel" name="label_mu_value">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <pointsize>10</pointsize>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>μ:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item alignment="Qt::AlignRight">
-                  <widget class="QLineEdit" name="lineEdit_mu_value">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>50</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>100</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_sg_value">
-                 <property name="sizeConstraint">
-                  <enum>QLayout::SetMaximumSize</enum>
-                 </property>
-                 <item alignment="Qt::AlignLeft">
-                  <widget class="QLabel" name="label_sg_value">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <pointsize>10</pointsize>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>σ:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item alignment="Qt::AlignRight">
-                  <widget class="QLineEdit" name="lineEdit_sg_value">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>50</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>100</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
               </layout>
-             </item>
-             <item>
-              <spacer name="verticalSpacer_parameters">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Fixed</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>5</width>
-                 <height>10</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_count_value">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Количество заявок:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEdit_count_value">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>50</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>300</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
              </item>
             </layout>
            </item>
@@ -472,7 +256,7 @@ background-color: &quot;white&quot;;
          <number>0</number>
         </property>
         <property name="sizeConstraint">
-         <enum>QLayout::SetMinimumSize</enum>
+         <enum>QLayout::SetFixedSize</enum>
         </property>
         <property name="leftMargin">
          <number>10</number>
@@ -496,64 +280,59 @@ background-color: &quot;white&quot;;
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_graphic_widgets" stretch="3,1">
-        <property name="spacing">
-         <number>10</number>
+       <widget class="QFrame" name="frame">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
-        <property name="sizeConstraint">
-         <enum>QLayout::SetMinimumSize</enum>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
         </property>
-        <property name="topMargin">
-         <number>10</number>
-        </property>
-        <property name="rightMargin">
-         <number>10</number>
-        </property>
-        <property name="bottomMargin">
-         <number>10</number>
-        </property>
-        <item>
-         <widget class="PlotWidget" name="application_count_graphic" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>400</width>
-            <height>250</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background-color: &quot;&quot;;</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="PlotWidget" name="handler_status_graphic" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>400</width>
-            <height>80</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background-color: &quot;&quot;;</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>10</number>
+         </property>
+         <property name="rightMargin">
+          <number>10</number>
+         </property>
+         <property name="bottomMargin">
+          <number>10</number>
+         </property>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_graphic_widgets">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="sizeConstraint">
+            <enum>QLayout::SetFixedSize</enum>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+          </layout>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </item>
@@ -745,14 +524,6 @@ background-color: &quot;white&quot;;
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>PlotWidget</class>
-   <extends>QWidget</extends>
-   <header>pyqtgraph</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>
