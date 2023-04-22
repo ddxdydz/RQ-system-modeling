@@ -33,8 +33,7 @@ class MainWindow(QMainWindow):
         # Словарь виджетов для отображения графиков::
         self.graphic_widgets = dict()
         for key in ALGORITHM_1_SETTINGS["GRAPHICS_KEYS"]:
-            self.graphic_widgets[key] = \
-                Graphic(ALGORITHM_1_SETTINGS["GRAPHICS_SETTINGS"][key])
+            self.graphic_widgets[key] = Graphic(ALGORITHM_1_SETTINGS["GRAPHICS_SETTINGS"][key])
 
         # Инициализация виджетов для панели состояния:
         self.progressBar = QProgressBar()
@@ -48,7 +47,6 @@ class MainWindow(QMainWindow):
         uic.loadUi(r'data\MainWindow.ui', self)
         self.setWindowIcon(QIcon(r'data\icons\app_icon.ico'))
         self.setWindowTitle("Имитационное моделирование систем массового обслуживания")
-        self.setFixedSize(680, 400)  # TODO
 
         # Настройка панели состояния:
         self.update_message("Готов...")
@@ -76,8 +74,7 @@ class MainWindow(QMainWindow):
         for key in ALGORITHM_1_SETTINGS["GRAPHICS_KEYS"]:
             self.verticalLayout_graphic_widgets.addWidget(
                 self.graphic_widgets[key],
-                ALGORITHM_1_SETTINGS["GRAPHICS_LAYOUT_STRETCH"][key],
-                QtCore.Qt.AlignmentFlag.AlignTop
+                ALGORITHM_1_SETTINGS["GRAPHICS_LAYOUT_STRETCH"][key]
             )
 
         # Инициализация виджетов для ввода параметров:
@@ -208,20 +205,16 @@ class MainWindow(QMainWindow):
 
 
 class Graphic(PlotWidget):
-    def __init__(self, view_setting):
+    def __init__(self, view_settings):
         super(Graphic, self).__init__()
-        # Параметры отображения графиков:
-        self.view_settings = view_setting
-        # Инициализация интерфейса графического виджета:
+        self.view_settings = view_settings
         self.init_widget_ui()
         self.init_graphic_ui()
 
     def init_widget_ui(self):
         sp = self.sizePolicy()
-        sp.setHorizontalPolicy(QSizePolicy.Maximum)
-        sp.setVerticalPolicy(QSizePolicy.Maximum)
-        self.setMinimumHeight(50)
-        self.resize(50, 50)
+        sp.setHorizontalPolicy(QSizePolicy.Preferred)
+        sp.setVerticalPolicy(QSizePolicy.Preferred)
 
     def init_graphic_ui(self):
         self.addLegend()
@@ -246,6 +239,16 @@ class Graphic(PlotWidget):
         self.setMouseEnabled(**self.view_settings["set_mouse_enabled"])
         self.getPlotItem().setMenuEnabled(False)
 
+    def set_left_ticks_view(self, data_for_graphic):
+        ay = self.getAxis('left')
+        max_elem = max(data_for_graphic["values"])
+        step = 1
+        max_count_of_left_ticks = self.view_settings["max_count_of_left_ticks"]
+        if max_elem > max_count_of_left_ticks:
+            step = max_elem // max_count_of_left_ticks
+        ticks = [i for i in range(0, max_elem + 1, step)]
+        ay.setTicks([[(v, str(v)) for v in ticks]])
+
     def update_graphic_view(self, data_for_graphic):
         self.clear()
         count_x_values = len(data_for_graphic["time"])
@@ -261,16 +264,6 @@ class Graphic(PlotWidget):
         )
         self.set_left_ticks_view(data_for_graphic)
         self.autoRange()
-
-    def set_left_ticks_view(self, data_for_graphic):
-        ay = self.getAxis('left')
-        max_elem = max(data_for_graphic["values"])
-        step = 1
-        max_count_of_left_ticks = self.view_settings["max_count_of_left_ticks"]
-        if max_elem > max_count_of_left_ticks:
-            step = max_elem // max_count_of_left_ticks
-        ticks = [i for i in range(0, max_elem + 1, step)]
-        ay.setTicks([[(v, str(v)) for v in ticks]])
 
 
 class Thread(QtCore.QThread):
