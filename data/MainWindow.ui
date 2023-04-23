@@ -303,7 +303,6 @@ background-color: &quot;white&quot;;
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <resources/>
  <connections/>

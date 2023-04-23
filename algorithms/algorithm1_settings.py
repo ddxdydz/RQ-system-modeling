@@ -3,34 +3,57 @@ ALGORITHM_1_SETTINGS = {
     "PARAMETERS_KEYS": ("lm", "mu", "sg", "application_count"),
 
     "PARAMETERS_LABELS": {
+
         "application_count": "Количество заявок:",
         "lm": "λ:",
         "mu": "μ:",
         "sg": "σ:"
+
     },
 
-    "PARAMETERS_TYPES": {
-        "application_count": int,
-        "lm": float,
-        "mu": float,
-        "sg": float
-    },
+    "PARAMETERS_SETTINGS": {
 
-    "PARAMETERS_DEFAULT_VALUES": {
-        "application_count": 4,
-        "lm": 3.0,
-        "mu": 1.0,
-        "sg": 1.0
-    },
+        "application_count": {
+            "type": int,
+            "default_value": 4,
+            "range": {"min": 0, "max": 100000},
+            "one_line_label": False
+        },
 
-    "PARAMETERS_RANGE": {
-        "application_count": {"min": 0, "max": 100000},
-        "lm": {"min": 0.001, "max": 999},
-        "mu": {"min": 0.001, "max": 999},
-        "sg": {"min": 0.001, "max": 999}
+        "lm": {
+            "type": float,
+            "default_value": 3.0,
+            "range": {"min": 0.001, "max": 999},
+            "one_line_label": True
+        },
+
+        "mu": {
+            "type": float,
+            "default_value": 1.0,
+            "range": {"min": 0.001, "max": 999},
+            "one_line_label": True
+        },
+
+        "sg": {
+            "type": float,
+            "default_value": 1.0,
+            "range": {"min": 0.001, "max": 999},
+            "one_line_label": True
+        }
+
     },
 
     "GRAPHICS_KEYS": ("application_count_graphic", "handler_status_graphic", "handler_percent_graphic"),
+
+    "GRAPHICS_LAYOUT_STRETCH": {
+
+        "application_count_graphic": 6,
+
+        "handler_status_graphic": 3,
+
+        "handler_percent_graphic": 4
+
+    },
 
     "GRAPHICS_SETTINGS": {
 
@@ -86,16 +109,8 @@ ALGORITHM_1_SETTINGS = {
             "pen_parameters": {"color": (0, 0, 0), "width": 1},
             "fillLevel": 0,
             "type": "not_histogram"
-        },
-    },
-
-    "GRAPHICS_LAYOUT_STRETCH": {
-
-        "application_count_graphic": 6,
-
-        "handler_status_graphic": 3,
-
-        "handler_percent_graphic": 4
+        }
 
     }
+
 }
