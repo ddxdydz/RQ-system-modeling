@@ -187,6 +187,8 @@ class StatusBar:
         self.parent.addWidget(self.label_message)
         self.parent.addWidget(self.stop_button)
         self.parent.addWidget(self.progressBar)
+        styles = "QStatusBar {\n  border: 1px solid#D7D7D7;\n  background-color: #F0F0F0;\n}"
+        self.parent.setStyleSheet(styles)
 
     def update_message(self, text):
         self.label_message.setText(f"  {text}   ")
