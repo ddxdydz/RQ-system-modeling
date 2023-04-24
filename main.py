@@ -11,7 +11,7 @@ from pyqtgraph import (
     mkBrush, mkPen, PlotWidget)
 
 from constants import *
-from algorithms.algorithm1 import main as alg1
+from algorithms.algorithm1_v3 import main as alg1
 from algorithms.algorithm1_settings import *
 
 
@@ -131,10 +131,12 @@ class MainWindow(QMainWindow):
         # Формируем данные для построения гистограмм из собранных значений:
         for i in range(1, len(collected_data)):
             for key in self.graphic_widgets.keys():
-                # Если рассматриваемое значение изменилось, то фиксируем его:
-                if collected_data[i - 1]["values"][key] != collected_data[i]["values"][key]:
-                    data_for_graphics[key]["time"].append(collected_data[i]["time"])
-                    data_for_graphics[key]["values"].append(collected_data[i]["values"][key])
+                # Если рассматриваемое значение не изменилось, то не записываем его в данные для гистограммы:
+                if self.graphic_widgets[key].type() == "histogram":
+                    if collected_data[i - 1]["values"][key] == collected_data[i]["values"][key]:
+                        continue
+                data_for_graphics[key]["time"].append(collected_data[i]["time"])
+                data_for_graphics[key]["values"].append(collected_data[i]["values"][key])
 
         # Удаляем последнее значение из данных для графиков для возможности отображения гистограм
         # Это последнее значение равняется изначальному значению и не влияет на общий результат
