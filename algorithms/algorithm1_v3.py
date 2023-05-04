@@ -2,6 +2,7 @@ from math import log
 from random import random
 from time import time
 
+from algorithms.algorithm1_settings import *
 from constants import *
 
 # Статусы заявок
@@ -21,15 +22,14 @@ class Algorithm1:
 
         self.sum_time_processing = 0
         self.last_progress_value = 0
+        self.handler_time_to_sum = 0  # Время после которого, время работы не учтено
         self.collected_data = dict()
 
         self.completed_applications_count = 0  # Количество обработанных заявок
         self.active_applications_count = 0  # Количество заявок, находящихся в системе
-        self.sum_time_processing = 0
 
         self.handler_status = FREE
         self.handler_app_id = None  # Индекс заявки, находящейся в обработке
-        self.handler_time_to_sum = 0  # Время после которого, время работы не учтено
 
         self.applications_statuses = list()
         self.times_of_unprocessed_events_by_application_indexes = list()
@@ -56,15 +56,15 @@ class Algorithm1:
     def update_alg_iteration_values(self):
         self.sum_time_processing = 0
         self.last_progress_value = 0
-        self.collected_data = dict()
+        self.handler_time_to_sum = 0
+        self.clear_collected_data()
 
-        self.completed_applications_count = 0  # Количество обработанных заявок
-        self.active_applications_count = 0  # Количество заявок, находящихся в системе
+        self.completed_applications_count = 0
+        self.active_applications_count = 0
         self.sum_time_processing = 0
 
         self.handler_status = FREE
-        self.handler_app_id = None  # Индекс заявки, находящейся в обработке
-        self.handler_time_to_sum = 0  # Время после которого, время работы не учтено
+        self.handler_app_id = None
 
         # Статусы заявок по их индексам:
         self.applications_statuses = [NOT_RECEIVED] * self.application_count
@@ -193,6 +193,7 @@ class Algorithm1:
 
             # Находим индекс заявки, участвующей в необработанном событии, которое наступает раньше остальных:
             nearest_app_id = self.sorted_app_ids[0]
+            nearest_app_time = self.times_of_unprocessed_events_by_application_indexes[nearest_app_id]
 
             # Поступление заявки в систему:
             if self.applications_statuses[nearest_app_id] == NOT_RECEIVED:
@@ -211,7 +212,8 @@ class Algorithm1:
             self.update_sorted_app_ids_list(nearest_app_id)
 
             # Сбор данных на текущей итерации:
-            self.collect_data(self.times_of_unprocessed_events_by_application_indexes[nearest_app_id])
+            self.collect_data(nearest_app_time)
+
             # Обновление индикаторов выполнения:
             if self.update_indicator(completed_applications_count):
                 break
@@ -219,7 +221,6 @@ class Algorithm1:
     def get_results(self):
         start_algorithm_working_time = time()
         self.update_alg_iteration_values()
-        self.clear_collected_data()
         self.run()
         if self.collected_data["status"] != ITERATION_LIMIT:
             self.collected_data["algorithm_working_time"] = time() - start_algorithm_working_time
