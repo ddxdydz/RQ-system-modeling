@@ -12,7 +12,7 @@ COMPLETED = 1435  # Завершено / обработано
 FREE = 2643  # Свободно
 PROCESSING = 2366  # В обработке / занято
 
-PD_GRAPHIC_FREQUENCY = 100
+PD_GRAPHIC_FREQUENCY = 1000
 
 
 class Algorithm1:

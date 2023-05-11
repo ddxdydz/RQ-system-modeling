@@ -17,6 +17,7 @@ from algorithms.algorithm1_settings import *
 
 WINDOW_MINIMUM_SIZE = 480, 300
 WINDOW_SIZE = 680, 400
+GRAPHIC_VIEW_INDENT_MULTIPLIER = 0.005
 
 
 class MainWindow(QMainWindow):
@@ -61,36 +62,23 @@ class MainWindow(QMainWindow):
         # Подключение функции для возможности её вызова из потока по сигналу:
         self.thread_alg1.change_value.connect(self.status_bar.set_progress_value)
 
+    def init_parameter_widgets(self):
+        # Инициализация виджетов для ввода параметров:
+        for parameter_key in ALGORITHM_1_SETTINGS["PARAMETERS_KEYS"]:
+            self.parameter_widgets[parameter_key] = Parameter(
+                ALGORITHM_1_SETTINGS["PARAMETERS_EDIT_SETTINGS"][parameter_key],
+                ALGORITHM_1_SETTINGS["PARAMETERS_LABELS_SETTINGS"][parameter_key],
+                self.verticalLayout_parameters
+            )
+
     def init_graphic_widgets(self):
         # Инициализация виджетов для вывода графиков:
         for key in ALGORITHM_1_SETTINGS["GRAPHICS_WIDGETS_KEYS"]:
             self.graphic_widgets[key] = Graphic(
-                ALGORITHM_1_SETTINGS["GRAPHICS_WIDGETS_SETTINGS"][key])
-            self.verticalLayout_graphic_widgets.addWidget(
-                self.graphic_widgets[key],
-                ALGORITHM_1_SETTINGS["GRAPHICS_LAYOUT_STRETCH"][key]
+                ALGORITHM_1_SETTINGS["GRAPHICS_WIDGETS_SETTINGS"][key],
+                ALGORITHM_1_SETTINGS["GRAPHICS_WIDGETS_LAYOUT_SETTINGS"][key],
+                self.verticalLayout_graphic_widgets
             )
-    
-    def init_parameter_widgets(self):
-        # Инициализация виджетов для ввода параметров:
-        for parameter_key in ALGORITHM_1_SETTINGS["PARAMETERS_KEYS"]:
-            parameter_label_widget = QLabel()
-            parameter_label_widget.setText(
-                ALGORITHM_1_SETTINGS["PARAMETERS_LABELS"][parameter_key])
-            self.parameter_widgets[parameter_key] = Parameter(
-                ALGORITHM_1_SETTINGS["PARAMETERS_SETTINGS"][parameter_key])
-            if self.parameter_widgets[parameter_key].is_one_line():
-                parameter_label_widget.setFont(QFont('MS Shell Dlg 2', 10))
-                parameter_layout = QHBoxLayout()
-                parameter_layout.addWidget(parameter_label_widget)
-                parameter_layout.addWidget(self.parameter_widgets[parameter_key])
-                self.verticalLayout_parameters.addLayout(parameter_layout)
-            else:
-                self.verticalLayout_parameters.addItem(
-                    QSpacerItem(20, 10, QSizePolicy.Fixed, QSizePolicy.Fixed))
-                self.verticalLayout_parameters.addWidget(parameter_label_widget)
-                self.verticalLayout_parameters.addWidget(
-                    self.parameter_widgets[parameter_key])
 
     def launch(self):
         if not self.thread_alg1.isRunning():
@@ -139,27 +127,23 @@ class MainWindow(QMainWindow):
             self.update_graphic_widgets(results["data_for_plotting"])
 
     def clear_graphic_widgets(self):
-        for graphic_key in ALGORITHM_1_SETTINGS["GRAPHICS_KEYS"]:
-            plot_settings = ALGORITHM_1_SETTINGS["GRAPHICS_PLOT_SETTINGS"][graphic_key]
-            widget_key = plot_settings["plot_widget_key"]
-            self.graphic_widgets[widget_key].clear()
+        for graphic_widget in self.graphic_widgets.values():
+            graphic_widget.clear()
 
     def update_graphic_widgets(self, collected_data):
         self.clear_graphic_widgets()
         for graphic_key in collected_data.keys():
             plot_settings = ALGORITHM_1_SETTINGS["GRAPHICS_PLOT_SETTINGS"][graphic_key]
             widget_key = plot_settings["plot_widget_key"]
-            print(graphic_key)
-            print(list(zip(collected_data[graphic_key]["time"], collected_data[graphic_key]["value"])))
             self.graphic_widgets[widget_key].add_graphic(
                 collected_data[graphic_key], plot_settings)
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key.Key_Enter - 1:
             self.launch()
-        if event.key() == QtCore.Qt.Key.Key_F5:
-            for widget in self.graphic_widgets.values():
-                widget.autoRange()
+        # if event.key() == QtCore.Qt.Key.Key_F5:
+        #     for widget in self.graphic_widgets.values():
+        #         widget.autoRange()
 
 
 class StatusBar:
@@ -203,15 +187,15 @@ class StatusBar:
         self.stop_button.show()
 
 
-class Parameter(QLineEdit):
+class ParameterLine(QLineEdit):
     def __init__(self, parameter_widget_settings):
-        super(Parameter, self).__init__()
+        super(ParameterLine, self).__init__()
         self.settings = parameter_widget_settings
         self.init_widget_ui()
     
     def init_widget_ui(self):
         self.setText(str(self.settings["default_value"]))
-        if self.is_one_line:
+        if self.is_one_line():
             self.setFixedWidth(100)
             self.setFixedHeight(20)
         else:
@@ -238,17 +222,44 @@ class Parameter(QLineEdit):
         return value
 
 
+class Parameter:
+    def __init__(self, parameter_edit_settings, parameter_label_settings, installation_layout):
+        self.parameter_edit_settings = parameter_edit_settings
+        self.parameter_label_settings = parameter_label_settings
+        self.parameter_edit_widget = ParameterLine(parameter_edit_settings)
+        self.parameter_label_widget = QLabel()
+        self.init_widget_ui(installation_layout)
+
+    def init_widget_ui(self, installation_layout):
+        self.parameter_label_widget.setText(self.parameter_label_settings["text"])
+        if self.parameter_edit_widget.is_one_line():
+            self.parameter_label_widget.setFont(QFont('MS Shell Dlg 2', 10))
+            parameter_layout = QHBoxLayout()
+            parameter_layout.addWidget(self.parameter_label_widget)
+            parameter_layout.addWidget(self.parameter_edit_widget)
+            installation_layout.addLayout(parameter_layout)
+        else:
+            installation_layout.addItem(QSpacerItem(20, 10, QSizePolicy.Fixed, QSizePolicy.Fixed))
+            installation_layout.addWidget(self.parameter_label_widget)
+            installation_layout.addWidget(self.parameter_edit_widget)
+
+    def get_value(self):
+        return self.parameter_edit_widget.get_value()
+
+
 class Graphic(PlotWidget):
-    def __init__(self, graphic_widget_settings):
+    def __init__(self, graphic_widget_settings, layout_settings, installation_layout):
         super(Graphic, self).__init__()
         self.settings = graphic_widget_settings
-        self.init_widget_ui()
+        self.layout_settings = layout_settings
+        self.init_widget_ui(installation_layout)
         self.init_graphic_ui()
 
-    def init_widget_ui(self):
+    def init_widget_ui(self, installation_layout):
         sp = self.sizePolicy()
         sp.setHorizontalPolicy(QSizePolicy.Preferred)
         sp.setVerticalPolicy(QSizePolicy.Preferred)
+        installation_layout.addWidget(self, self.layout_settings["stretch"])
 
     def init_graphic_ui(self):
         self.addLegend()
@@ -257,22 +268,36 @@ class Graphic(PlotWidget):
         self.setLabel("left", self.settings["left_label"], **self.settings["styles_labels"])
         self.setLabel("bottom", self.settings["bottom_label"], **self.settings["styles_labels"])
         ay = self.getAxis('left')
-        ay.setWidth(w=self.settings["width_left_axis_px"])
+        ay.setWidth(w=self.settings["indent_left_axis_px"])
         self.showGrid(**self.settings["show_grid"])
         self.setMouseEnabled(**self.settings["set_mouse_enabled"])
         self.getPlotItem().setMenuEnabled(False)
+        self.hideButtons()
 
     def get_max_value(self, data_for_plotting):
         if self.settings["maximum_value"] is None:
             return max(data_for_plotting["value"])
         return self.settings["maximum_value"]
 
-    def set_left_ticks(self, max_value):
+    def update_ticks_text(self, data_for_plotting):
+        max_value = self.get_max_value(data_for_plotting)
         ay = self.getAxis('left')
         ticks_count = self.settings["max_count_of_left_ticks"]
         step = max_value // ticks_count if max_value > ticks_count else 1
         ticks = [i for i in range(0, max_value + 1, step)]
         ay.setTicks([[(v, str(v)) for v in ticks]])
+
+    def update_range(self, data_for_plotting, graphic_plot_settings):
+        total_range = data_for_plotting["time"][-1] - data_for_plotting["time"][0]
+        min_x_in_range = data_for_plotting["time"][0] - total_range * GRAPHIC_VIEW_INDENT_MULTIPLIER
+        max_x_in_range = data_for_plotting["time"][-1] + total_range * GRAPHIC_VIEW_INDENT_MULTIPLIER
+        self.setXRange(min_x_in_range, max_x_in_range)
+        # self.plotItem.vb.setLimits(xMin=min_x_in_range, xMax=max_x_in_range)
+        if graphic_plot_settings["range_oy"] is not None:
+            self.setYRange(
+                graphic_plot_settings["range_oy"]["min"],
+                graphic_plot_settings["range_oy"]["max"]
+            )
 
     def add_graphic(self, data_for_plotting, graphic_plot_settings):
         graphic_type = graphic_plot_settings["type"]
@@ -291,9 +316,8 @@ class Graphic(PlotWidget):
             brush=mkBrush(**graphic_plot_settings["brush_parameters"]),
             pen=mkPen(**graphic_plot_settings["pen_parameters"]),
         )
-
-        self.set_left_ticks(self.get_max_value(data_for_plotting))
-        self.autoRange()
+        self.update_ticks_text(data_for_plotting)
+        self.update_range(data_for_plotting, graphic_plot_settings)
 
 
 class Thread(QtCore.QThread):
