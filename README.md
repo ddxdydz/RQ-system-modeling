@@ -1,4 +1,4 @@
 # Скриншот работы программы:
-![image](https://user-images.githubusercontent.com/73974596/233791603-9c747fd2-3515-4a5d-a112-a4d7190beab1.png)
+![image](https://github.com/ddxdydz/Simulation-modeling-of-queuing-systems/assets/73974596/bfea46eb-6f41-4754-8012-77222f880bf3)
 
 
