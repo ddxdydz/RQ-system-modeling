@@ -281,6 +281,9 @@ background-color: &quot;white&quot;;
         <property name="rightMargin">
          <number>10</number>
         </property>
+        <property name="bottomMargin">
+         <number>5</number>
+        </property>
         <item>
          <spacer name="horizontalSpacer_2">
           <property name="orientation">

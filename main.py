@@ -63,8 +63,9 @@ class MainWindow(QMainWindow):
 
     def init_graphic_widgets(self):
         # Инициализация виджетов для вывода графиков:
-        for key in ALGORITHM_1_SETTINGS["GRAPHICS_KEYS"]:
-            self.graphic_widgets[key] = Graphic(ALGORITHM_1_SETTINGS["GRAPHICS_SETTINGS"][key])
+        for key in ALGORITHM_1_SETTINGS["GRAPHICS_WIDGETS_KEYS"]:
+            self.graphic_widgets[key] = Graphic(
+                ALGORITHM_1_SETTINGS["GRAPHICS_WIDGETS_SETTINGS"][key])
             self.verticalLayout_graphic_widgets.addWidget(
                 self.graphic_widgets[key],
                 ALGORITHM_1_SETTINGS["GRAPHICS_LAYOUT_STRETCH"][key]
@@ -123,31 +124,6 @@ class MainWindow(QMainWindow):
         self.lunch_button.setEnabled(True)
         self.status_bar.hide_progress()
 
-    def update_graphic_widgets(self, collected_data):
-        data_for_graphics = dict()
-        for key in self.graphic_widgets.keys():
-            data_for_graphics[key] = {"time": [0], "values": [0]}
-
-        # Формируем данные для построения гистограмм из собранных значений:
-        for i in range(1, len(collected_data)):
-            for key in self.graphic_widgets.keys():
-                # Если рассматриваемое значение не изменилось, то не записываем его в данные для гистограммы:
-                if self.graphic_widgets[key].type() == "histogram":
-                    if collected_data[i - 1]["values"][key] == collected_data[i]["values"][key]:
-                        continue
-                data_for_graphics[key]["time"].append(collected_data[i]["time"])
-                data_for_graphics[key]["values"].append(collected_data[i]["values"][key])
-
-        # Удаляем последнее значение из данных для графиков для возможности отображения гистограм
-        # Это последнее значение равняется изначальному значению и не влияет на общий результат
-        for key in self.graphic_widgets.keys():
-            if self.graphic_widgets[key].get_type() == "histogram":
-                data_for_graphics[key]["values"].pop(-1)
-
-        # Строим график по полученным значениям:
-        for key in self.graphic_widgets.keys():
-            self.graphic_widgets[key].update_graphic_view(data_for_graphics[key])
-
     def process_results(self):
         results = self.thread_alg1.results
         if results["status"] == ITERATION_LIMIT:
@@ -160,7 +136,23 @@ class MainWindow(QMainWindow):
             work_time = results['algorithm_working_time']
             work_time_for_status = round(work_time, 3) if work_time >= 0.01 else 0.01
             self.status_bar.update_message(f"Обработка завершена за {work_time_for_status} сек. ")
-            self.update_graphic_widgets(results["events_data"])
+            self.update_graphic_widgets(results["data_for_plotting"])
+
+    def clear_graphic_widgets(self):
+        for graphic_key in ALGORITHM_1_SETTINGS["GRAPHICS_KEYS"]:
+            plot_settings = ALGORITHM_1_SETTINGS["GRAPHICS_PLOT_SETTINGS"][graphic_key]
+            widget_key = plot_settings["plot_widget_key"]
+            self.graphic_widgets[widget_key].clear()
+
+    def update_graphic_widgets(self, collected_data):
+        self.clear_graphic_widgets()
+        for graphic_key in collected_data.keys():
+            plot_settings = ALGORITHM_1_SETTINGS["GRAPHICS_PLOT_SETTINGS"][graphic_key]
+            widget_key = plot_settings["plot_widget_key"]
+            print(graphic_key)
+            print(list(zip(collected_data[graphic_key]["time"], collected_data[graphic_key]["value"])))
+            self.graphic_widgets[widget_key].add_graphic(
+                collected_data[graphic_key], plot_settings)
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key.Key_Enter - 1:
@@ -212,9 +204,9 @@ class StatusBar:
 
 
 class Parameter(QLineEdit):
-    def __init__(self, parameter_settings):
+    def __init__(self, parameter_widget_settings):
         super(Parameter, self).__init__()
-        self.settings = parameter_settings
+        self.settings = parameter_widget_settings
         self.init_widget_ui()
     
     def init_widget_ui(self):
@@ -247,9 +239,9 @@ class Parameter(QLineEdit):
 
 
 class Graphic(PlotWidget):
-    def __init__(self, graphic_settings):
+    def __init__(self, graphic_widget_settings):
         super(Graphic, self).__init__()
-        self.settings = graphic_settings
+        self.settings = graphic_widget_settings
         self.init_widget_ui()
         self.init_graphic_ui()
 
@@ -270,33 +262,37 @@ class Graphic(PlotWidget):
         self.setMouseEnabled(**self.settings["set_mouse_enabled"])
         self.getPlotItem().setMenuEnabled(False)
 
-    def get_type(self):
-        return self.settings["type"]
-
-    def get_max_value(self, data_for_graphic):
+    def get_max_value(self, data_for_plotting):
         if self.settings["maximum_value"] is None:
-            return max(data_for_graphic["values"])
+            return max(data_for_plotting["value"])
         return self.settings["maximum_value"]
 
-    def set_left_ticks_view(self, max_value):
+    def set_left_ticks(self, max_value):
         ay = self.getAxis('left')
         ticks_count = self.settings["max_count_of_left_ticks"]
         step = max_value // ticks_count if max_value > ticks_count else 1
         ticks = [i for i in range(0, max_value + 1, step)]
         ay.setTicks([[(v, str(v)) for v in ticks]])
 
-    def update_graphic_view(self, data_for_graphic):
-        self.clear()
+    def add_graphic(self, data_for_plotting, graphic_plot_settings):
+        graphic_type = graphic_plot_settings["type"]
+
+        # Удаляем последнее значение из данных для графиков для возможности отображения гистограм
+        # Это последнее значение равняется изначальному значению и не влияет на общий результат
+        if graphic_type == "histogram":
+            data_for_plotting["value"].pop(-1)
+
         self.plot(
-            data_for_graphic["time"],
-            data_for_graphic["values"],
-            stepMode="center" if self.get_type() == "histogram" else None,
-            fillLevel=self.settings["fillLevel"],
+            data_for_plotting["time"],
+            data_for_plotting["value"],
+            stepMode="center" if graphic_type == "histogram" else None,
+            fillLevel=graphic_plot_settings["fillLevel"],
             fillOutline=True,
-            brush=mkBrush(**self.settings["brush_parameters"]),
-            pen=mkPen(**self.settings["pen_parameters"]),
+            brush=mkBrush(**graphic_plot_settings["brush_parameters"]),
+            pen=mkPen(**graphic_plot_settings["pen_parameters"]),
         )
-        self.set_left_ticks_view(self.get_max_value(data_for_graphic))
+
+        self.set_left_ticks(self.get_max_value(data_for_plotting))
         self.autoRange()
 
 

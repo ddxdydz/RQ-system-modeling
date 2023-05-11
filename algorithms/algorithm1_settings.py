@@ -43,21 +43,67 @@ ALGORITHM_1_SETTINGS = {
 
     },
 
-    "GRAPHICS_KEYS": ("application_count_graphic", "handler_status_graphic", "handler_percent_graphic"),
+    "GRAPHICS_KEYS": (
+        "application_count_graphic",
+        "handler_status_graphic",
+        "probability_distribution_processed"
+    ),
 
-    "GRAPHICS_LAYOUT_STRETCH": {
+    "GRAPHICS_PLOT_SETTINGS": {
 
-        "application_count_graphic": 6,
+        "application_count_graphic": {
+            "plot_widget_key": "application_count_graphic_widget",
+            "brush_parameters": {"color": (0, 0, 255, 80)},
+            "pen_parameters": {"color": (0, 0, 0)},
+            "fillLevel": 0,
+            "type": "histogram"
+        },
 
-        "handler_status_graphic": 3,
+        "handler_status_graphic": {
+            "plot_widget_key": "handler_status_graphic_widget",
+            "brush_parameters": {"color": (255, 0, 0, 80)},
+            "pen_parameters": {"color": (0, 0, 0)},
+            "fillLevel": 0,
+            "type": "histogram"
+        },
 
-        "handler_percent_graphic": 4
+        "probability_distribution_free": {
+            "plot_widget_key": "probability_distribution_graphic_widget",
+            "brush_parameters": {"color": (255, 0, 0, 0)},
+            "pen_parameters": {"color": (0, 0, 255, 200), "width": 1},
+            "fillLevel": None,
+            "type": "not_histogram"
+        },
+
+        "probability_distribution_processed": {
+            "plot_widget_key": "probability_distribution_graphic_widget",
+            "brush_parameters": {"color": (0, 0, 255, 0)},
+            "pen_parameters": {"color": (255, 0, 0, 200), "width": 1},
+            "fillLevel": None,
+            "type": "not_histogram"
+        }
 
     },
 
-    "GRAPHICS_SETTINGS": {
+    "GRAPHICS_WIDGETS_KEYS": (
+        "application_count_graphic_widget",
+        "handler_status_graphic_widget",
+        "probability_distribution_graphic_widget"
+    ),
 
-        "application_count_graphic": {
+    "GRAPHICS_LAYOUT_STRETCH": {
+
+        "application_count_graphic_widget": 6,
+
+        "handler_status_graphic_widget": 3,
+
+        "probability_distribution_graphic_widget": 4
+
+    },
+
+    "GRAPHICS_WIDGETS_SETTINGS": {
+
+        "application_count_graphic_widget": {
             "title": "Изменение количества заявок",
             "styles_title": {"color": "b", "font-size": "15pt"},
             "left_label": "Количество заявок в системе",
@@ -68,14 +114,10 @@ ALGORITHM_1_SETTINGS = {
             "maximum_value": None,
             "background_style": "w",
             "show_grid": {"x": True, "y": True},
-            "set_mouse_enabled": {"x": True, "y": False},
-            "brush_parameters": {"color": (0, 0, 255, 80)},
-            "pen_parameters": {"color": (0, 0, 0)},
-            "fillLevel": 0,
-            "type": "histogram"
+            "set_mouse_enabled": {"x": True, "y": False}
         },
 
-        "handler_status_graphic": {
+        "handler_status_graphic_widget": {
             "title": "Изменение статуса обработчика",
             "styles_title": {"color": "b", "font-size": "15pt"},
             "left_label": "Статус",
@@ -86,15 +128,11 @@ ALGORITHM_1_SETTINGS = {
             "maximum_value": 1,
             "background_style": "w",
             "show_grid": {"x": True, "y": True},
-            "set_mouse_enabled": {"x": True, "y": False},
-            "brush_parameters": {"color": (255, 0, 0, 80)},
-            "pen_parameters": {"color": (0, 0, 0)},
-            "fillLevel": 0,
-            "type": "histogram"
+            "set_mouse_enabled": {"x": True, "y": False}
         },
 
-        "handler_percent_graphic": {
-            "title": "Вероятность занятости обработчка",
+        "probability_distribution_graphic_widget": {
+            "title": "Распределение вероятностей занятости обработчика",
             "styles_title": {"color": "b", "font-size": "15pt"},
             "left_label": "Вероятность (%)",
             "bottom_label": "Время (секунды)",
@@ -104,11 +142,7 @@ ALGORITHM_1_SETTINGS = {
             "maximum_value": 100,
             "background_style": "w",
             "show_grid": {"x": True, "y": True},
-            "set_mouse_enabled": {"x": True, "y": False},
-            "brush_parameters": {"color": (0, 255, 0, 80)},
-            "pen_parameters": {"color": (0, 0, 0), "width": 1},
-            "fillLevel": 0,
-            "type": "not_histogram"
+            "set_mouse_enabled": {"x": True, "y": False}
         }
 
     }

@@ -2,7 +2,6 @@ from math import log
 from random import random
 from time import time
 
-from algorithms.algorithm1_settings import *
 from constants import *
 
 # Статусы заявок
@@ -13,23 +12,23 @@ COMPLETED = 1435  # Завершено / обработано
 FREE = 2643  # Свободно
 PROCESSING = 2366  # В обработке / занято
 
+PD_GRAPHIC_FREQUENCY = 100
+
 
 class Algorithm1:
     def __init__(self, application_count=None, lm=None, mu=None, sg=None):
         self.application_count = application_count
         self.lm, self.mu, self.sg = lm, mu, sg
-        self.signal_to_change_progress_value = None
 
-        self.sum_time_processing = 0
-        self.last_progress_value = 0
-        self.handler_time_to_sum = 0  # Время после которого, время работы не учтено
+        self.signal_to_change_progress_value = None
+        self.last_progress_value_for_indicator = 0
         self.collected_data = dict()
 
-        self.completed_applications_count = 0  # Количество обработанных заявок
-        self.active_applications_count = 0  # Количество заявок, находящихся в системе
+        self.completed_applications_count = 0
+        self.active_applications_count = 0
 
         self.handler_status = FREE
-        self.handler_app_id = None  # Индекс заявки, находящейся в обработке
+        self.handler_app_id = None
 
         self.applications_statuses = list()
         self.times_of_unprocessed_events_by_application_indexes = list()
@@ -37,34 +36,25 @@ class Algorithm1:
 
     def clear_collected_data(self):
         self.collected_data = {
-            "events_data": [
+            "data_for_plotting":
                 {
-                    "time": 0,
-                    "values":
-                        {
-                            "application_count_graphic": 0,
-                            "handler_status_graphic": 0,
-                            "handler_percent_graphic": 0
-                        }
-                }
-            ],
+                    "application_count_graphic": {"time": [0], "value": [0]},
+                    "handler_status_graphic": {"time": [0], "value": [0]}
+                },
             "algorithm_working_time": None,
             "number_of_iterations": 0,
             "status": 0
         }
 
     def update_alg_iteration_values(self):
-        self.sum_time_processing = 0
-        self.last_progress_value = 0
-        self.handler_time_to_sum = 0
+        self.last_progress_value_for_indicator = 0
         self.clear_collected_data()
 
-        self.completed_applications_count = 0
-        self.active_applications_count = 0
-        self.sum_time_processing = 0
+        self.completed_applications_count = 0  # Количество обработанных заявок
+        self.active_applications_count = 0  # Количество заявок, находящихся в системе
 
         self.handler_status = FREE
-        self.handler_app_id = None
+        self.handler_app_id = None  # Индекс заявки, находящейся в обработке
 
         # Статусы заявок по их индексам:
         self.applications_statuses = [NOT_RECEIVED] * self.application_count
@@ -97,22 +87,37 @@ class Algorithm1:
     def get_orbit_time(self) -> float:
         return -log(random()) / self.sg
 
+    def collect_application_count_graphic_data(self, app_id):
+        app_time = self.times_of_unprocessed_events_by_application_indexes[app_id]
+        self.collected_data["data_for_plotting"]["application_count_graphic"]["time"].append(app_time)
+        self.collected_data["data_for_plotting"]["application_count_graphic"]["value"].append(
+            self.active_applications_count)
+
+    def collect_handler_status_graphic_data(self, app_id):
+        app_time = self.times_of_unprocessed_events_by_application_indexes[app_id]
+        self.collected_data["data_for_plotting"]["handler_status_graphic"]["time"].append(app_time)
+        self.collected_data["data_for_plotting"]["handler_status_graphic"]["value"].append(
+            int(self.handler_status == PROCESSING))
+
     def to_active_app(self, app_id):
         self.applications_statuses[app_id] = ACTIVE
         self.active_applications_count += 1
+        self.collect_application_count_graphic_data(app_id)
 
     def to_process_handler(self, app_id):
         self.handler_status = PROCESSING
         self.handler_app_id = app_id
-        self.handler_time_to_sum = self.times_of_unprocessed_events_by_application_indexes[app_id]
+        self.collect_handler_status_graphic_data(app_id)
         self.times_of_unprocessed_events_by_application_indexes[app_id] += self.get_handler_time()
 
-    def to_free_handler(self):
+    def to_free_handler(self, app_id):
         self.handler_status = FREE
         self.applications_statuses[self.handler_app_id] = COMPLETED
         self.handler_app_id = None
         self.completed_applications_count += 1
         self.active_applications_count -= 1
+        self.collect_application_count_graphic_data(app_id)
+        self.collect_handler_status_graphic_data(app_id)
 
     def to_orbit(self, app_id):
         self.times_of_unprocessed_events_by_application_indexes[app_id] += self.get_orbit_time()
@@ -157,29 +162,12 @@ class Algorithm1:
                 self.sorted_app_ids.insert(
                     self.get_insert_id(next_nearest_event_time), nearest_app_id)
 
-    def collect_data(self, nearest_event_time):
-        if self.handler_status == PROCESSING and self.handler_app_id != nearest_event_time:
-            self.sum_time_processing += nearest_event_time - self.handler_time_to_sum
-            self.handler_time_to_sum = nearest_event_time
-
-        self.collected_data["events_data"].append(
-            {
-                "time": nearest_event_time,
-                "values":
-                    {
-                        "application_count_graphic": self.active_applications_count,
-                        "handler_status_graphic": int(self.handler_status == PROCESSING),
-                        "handler_percent_graphic": int(self.sum_time_processing * 100 / nearest_event_time)
-                    }
-            }
-        )
-
-    def update_indicator(self, completed_applications_count):
+    def update_indicator(self):
         if self.signal_to_change_progress_value is not None:
-            progress = int(completed_applications_count * 100 / self.application_count)
-            if progress != self.last_progress_value and progress % 5 == 0:
+            progress = int(self.completed_applications_count * 100 / self.application_count)
+            if progress != self.last_progress_value_for_indicator and progress % 5 == 0:
                 self.signal_to_change_progress_value.emit(progress)
-                self.last_progress_value = progress
+                self.last_progress_value_for_indicator = progress
                 print(progress)
             if self.collected_data["number_of_iterations"] > ITERATION_LIMIT_COUNT and progress < 5:
                 self.collected_data["status"] = ITERATION_LIMIT
@@ -187,13 +175,11 @@ class Algorithm1:
         return False
 
     def run(self):
-        completed_applications_count = 0
 
-        while completed_applications_count != self.application_count:
+        while self.completed_applications_count != self.application_count:
 
             # Находим индекс заявки, участвующей в необработанном событии, которое наступает раньше остальных:
             nearest_app_id = self.sorted_app_ids[0]
-            nearest_app_time = self.times_of_unprocessed_events_by_application_indexes[nearest_app_id]
 
             # Поступление заявки в систему:
             if self.applications_statuses[nearest_app_id] == NOT_RECEIVED:
@@ -203,26 +189,55 @@ class Algorithm1:
                 self.to_process_handler(nearest_app_id)
             # Если прибор был занят текущей заявкой, то освобождаем его:
             elif self.handler_app_id == nearest_app_id:
-                completed_applications_count += 1
-                self.to_free_handler()
+                self.to_free_handler(nearest_app_id)
             else:  # на орбиту
                 self.to_orbit(nearest_app_id)
 
             # Обновление отсортированного списка индексов sorted_app_ids:
             self.update_sorted_app_ids_list(nearest_app_id)
 
-            # Сбор данных на текущей итерации:
-            self.collect_data(nearest_app_time)
-
             # Обновление индикаторов выполнения:
-            if self.update_indicator(completed_applications_count):
+            if self.update_indicator():
                 break
+
+    def add_probability_distribution_data(self):
+        hs_time_list = self.collected_data["data_for_plotting"]["handler_status_graphic"]["time"]
+        hs_value_list = self.collected_data["data_for_plotting"]["handler_status_graphic"]["value"]
+
+        # Добавление дополнительных значений для плавности графика:
+        step = (hs_time_list[-1] - hs_time_list[0]) / PD_GRAPHIC_FREQUENCY
+        time_for_adding = step * PD_GRAPHIC_FREQUENCY - step
+        for id_time in range(len(hs_time_list) - 2, -1, -1):
+            start_time_range = hs_time_list[id_time]
+            end_time_range = hs_time_list[id_time + 1]
+            hs_status_in_range = hs_value_list[id_time]
+            while start_time_range < time_for_adding < end_time_range:
+                hs_time_list.insert(id_time + 1, time_for_adding)
+                hs_value_list.insert(id_time + 1, hs_status_in_range)
+                time_for_adding -= step
+
+        # Добавление данных для построения графика:
+        probability_distribution_data = [0]
+        working_time_sum = 0
+        total_time_sum = 0
+        for id_time in range(1, len(hs_time_list)):
+            hs_status_in_range = hs_value_list[id_time - 1]
+            start_time_range = hs_time_list[id_time - 1]
+            end_time_range = hs_time_list[id_time]
+            delta_time = end_time_range - start_time_range
+            if hs_status_in_range == 1:
+                working_time_sum += delta_time
+            total_time_sum += delta_time
+            probability_distribution_data.append(working_time_sum * 100 / total_time_sum)
+        self.collected_data["data_for_plotting"]["probability_distribution_processed"] = \
+            {"time": hs_time_list, "value": probability_distribution_data}
 
     def get_results(self):
         start_algorithm_working_time = time()
         self.update_alg_iteration_values()
         self.run()
         if self.collected_data["status"] != ITERATION_LIMIT:
+            self.add_probability_distribution_data()
             self.collected_data["algorithm_working_time"] = time() - start_algorithm_working_time
             self.collected_data["status"] = -1
         return self.collected_data
@@ -235,5 +250,6 @@ def main(application_count, lm, mu, sg, signal_to_change_progress_value=None):
 
 
 if __name__ == '__main__':
-    result = main(application_count=200, lm=3, mu=1, sg=1)
-    print(result["algorithm_working_time"], result["number_of_iterations"])
+    result = main(application_count=4, lm=3, mu=1, sg=1)
+    # print(result["data_for_plotting"])
+    # print(result["algorithm_working_time"], result["number_of_iterations"])
