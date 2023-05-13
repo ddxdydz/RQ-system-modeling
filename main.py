@@ -1,16 +1,19 @@
 import sys
 
-from PyQt5 import uic
 from PyQt5 import QtCore
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QMainWindow, QApplication, QHBoxLayout, QSpacerItem,
     QProgressBar, QLabel, QPushButton, QLineEdit)
 from PyQt5.QtWidgets import QSizePolicy
-from pyqtgraph import (
-    mkBrush, mkPen, PlotWidget)
+from pyqtgraph import mkBrush, mkPen, PlotWidget
+import pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5
+import pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt5
+import pyqtgraph.imageview.ImageViewTemplate_pyqt5
 
 from constants import *
+from data.MainWindow import Ui_MainWindow
+from data.icons.ico_from_code import get_ico
 from algorithms.algorithm1_v3 import main as alg1
 from algorithms.algorithm1_settings import *
 
@@ -20,7 +23,7 @@ WINDOW_SIZE = 680, 400
 GRAPHIC_VIEW_INDENT_MULTIPLIER = 0.005
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
 
@@ -39,14 +42,14 @@ class MainWindow(QMainWindow):
         self.status_bar = StatusBar(self.statusBar())
 
         # Инициализация интерфейса главного окна:
+        self.setupUi(self)
         self.init_main_ui()
         self.init_parameter_widgets()
         self.init_graphic_widgets()
         self.to_based_widgets_state()
 
     def init_main_ui(self):
-        uic.loadUi(r'data\MainWindow.ui', self)
-        self.setWindowIcon(QIcon(r'data\icons\app_icon.ico'))
+        self.setWindowIcon(get_ico())
         self.setWindowTitle("Имитационное моделирование систем массового обслуживания")
         self.setMinimumSize(*WINDOW_MINIMUM_SIZE)
         self.resize(*WINDOW_SIZE)
