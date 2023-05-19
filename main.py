@@ -20,6 +20,7 @@ from algorithms.algorithm1_settings import *
 
 WINDOW_MINIMUM_SIZE = 480, 300
 WINDOW_SIZE = 680, 400
+WINDOW_MAXIMUM_SIZE = 1080, 720
 GRAPHIC_VIEW_INDENT_MULTIPLIER = 0.005
 
 
@@ -52,6 +53,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowIcon(get_ico())
         self.setWindowTitle("Имитационное моделирование систем массового обслуживания")
         self.setMinimumSize(*WINDOW_MINIMUM_SIZE)
+        self.setMaximumSize(*WINDOW_MAXIMUM_SIZE)
         self.resize(*WINDOW_SIZE)
 
         # Подключение кнопок к вызываемым функциям:
@@ -198,12 +200,12 @@ class ParameterLine(QLineEdit):
     
     def init_widget_ui(self):
         self.setText(str(self.settings["default_value"]))
-        if self.is_one_line():
-            self.setFixedWidth(100)
-            self.setFixedHeight(20)
-        else:
-            self.setFixedWidth(133)
-            self.setFixedHeight(20)
+        # if self.is_one_line():
+        #     self.setFixedWidth(100)
+        #     self.setFixedHeight(20)
+        # else:
+        #     self.setFixedWidth(133)
+        #     self.setFixedHeight(20)
 
     def is_one_line(self):
         return self.settings["one_line_label"]
