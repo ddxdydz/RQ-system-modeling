@@ -5,8 +5,9 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QMainWindow, QApplication, QHBoxLayout, QSpacerItem,
     QProgressBar, QLabel, QPushButton, QLineEdit)
-from PyQt5.QtWidgets import QSizePolicy
+from PyQt5.QtWidgets import QSizePolicy, QDesktopWidget
 from pyqtgraph import mkBrush, mkPen, PlotWidget
+# Прямое подключение скрытых зависимостей для избижания неполной сборки exe-файла:
 import pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5
 import pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt5
 import pyqtgraph.imageview.ImageViewTemplate_pyqt5
@@ -54,7 +55,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowTitle("Имитационное моделирование систем массового обслуживания")
         self.setMinimumSize(*WINDOW_MINIMUM_SIZE)
         self.setMaximumSize(*WINDOW_MAXIMUM_SIZE)
-        self.resize(*WINDOW_SIZE)
+        self.resize(*get_widget_size())
 
         # Подключение кнопок к вызываемым функциям:
         self.lunch_button.clicked.connect(self.launch)
@@ -353,6 +354,18 @@ class FullnessError(Exception):
 
 class RangeError(Exception):
     pass
+
+
+def get_widget_size():
+    q = QDesktopWidget().availableGeometry()
+    screen_width, screen_height = q.width(), q.height()
+    k = screen_width / 1366
+    widget_width, widget_height = int(k * WINDOW_SIZE[0]), int(k * WINDOW_SIZE[1])
+    if widget_width > WINDOW_MAXIMUM_SIZE[0] or widget_height > WINDOW_MAXIMUM_SIZE[1]:
+        return WINDOW_MAXIMUM_SIZE
+    if widget_width < WINDOW_MINIMUM_SIZE[0] or widget_height < WINDOW_MINIMUM_SIZE[1]:
+        return WINDOW_MINIMUM_SIZE
+    return widget_width, widget_height
 
 
 def except_hook(cls, exception, traceback):
