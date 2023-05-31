@@ -1,26 +1,26 @@
 import sys
 
 from PyQt5 import QtCore
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import (
     QMainWindow, QApplication, QHBoxLayout, QSpacerItem,
     QProgressBar, QLabel, QPushButton, QLineEdit)
 from PyQt5.QtWidgets import QSizePolicy, QDesktopWidget
 from pyqtgraph import mkBrush, mkPen, PlotWidget
-# Прямое подключение скрытых зависимостей для избижания неполной сборки exe-файла:
+
+# Прямое подключение скрытых зависимостей для избижания неполной сборки exe-файла через pyinstaller:
 import pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5
 import pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt5
 import pyqtgraph.imageview.ImageViewTemplate_pyqt5
 
 from constants import *
 from data.MainWindow import Ui_MainWindow
-from data.icons.ico_from_code import get_ico
-from algorithms.algorithm1_v3 import main as alg1
-from algorithms.algorithm1_settings import *
+from data.icons.get_ico_from_code import get_ico
+from algorithms.algorithm1 import main as alg1
+from algorithms.algorithm1_display_settings import *
 
 
 WINDOW_MINIMUM_SIZE = 480, 300
-WINDOW_SIZE = 680, 400
 WINDOW_MAXIMUM_SIZE = 1080, 720
 GRAPHIC_VIEW_INDENT_MULTIPLIER = 0.005
 
@@ -359,8 +359,9 @@ class RangeError(Exception):
 def get_widget_size():
     q = QDesktopWidget().availableGeometry()
     screen_width, screen_height = q.width(), q.height()
+    base_window_size = 680, 400  # window size for 1366x680
     k = screen_width / 1366
-    widget_width, widget_height = int(k * WINDOW_SIZE[0]), int(k * WINDOW_SIZE[1])
+    widget_width, widget_height = int(k * base_window_size[0]), int(k * base_window_size[1])
     if widget_width > WINDOW_MAXIMUM_SIZE[0] or widget_height > WINDOW_MAXIMUM_SIZE[1]:
         return WINDOW_MAXIMUM_SIZE
     if widget_width < WINDOW_MINIMUM_SIZE[0] or widget_height < WINDOW_MINIMUM_SIZE[1]:
