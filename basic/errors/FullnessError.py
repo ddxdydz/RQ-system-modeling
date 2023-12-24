@@ -1,0 +1,2 @@
+class FullnessError(Exception):
+    pass
