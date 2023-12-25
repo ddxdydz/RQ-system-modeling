@@ -12,58 +12,61 @@ class AlgorithmS2(Algorithm):
         super().__init__(signal_to_change_progress_value)
 
         self.mu2, self.dt1, self.dt2 = None, None, None
-        self.handler_time = 0
 
-    def update_handler_time(self):
-        if self.handler_status == BROKEN:
-            # добавление времени восстановления
-            self.handler_time += get_time(self.mu2)
-        else:
-            if self.handler_status == FREE:
-                self.handler_time += get_time(self.dt1)
-            else:  # Если был занят
-                self.handler_time += get_time(self.dt2)
+    def set_parameters(self, application_count, lm, mu, mu2, sg, dt1, dt2):
+        self.set(application_count, lm, mu, sg)
+        self.mu2, self.dt1, self.dt2, = mu2, dt1, dt2
+        self.event_manager.add_event(self.get_broken_time(), HANDLER_BROKEN_EVENT, None)
 
-    def collect_handler_status_graphic_data(self):
-        self.collected_data["data_for_plotting"]["handler_status_graphic"]["time"].append(
-            self.handler_time
-        )
-        self.collected_data["data_for_plotting"]["handler_status_graphic"]["value"].append(
-            self.handler_status
-        )
+    def get_recover_time(self):
+        return get_time(self.mu2)
+
+    def get_broken_time(self):
+        if self.handler_status == FREE:
+            return get_time(self.dt1)
+        else:  # Если был занят
+            return get_time(self.dt2)
+
+    def to_recover_handler(self, event_time):
+        self.handler_status = FREE
+        self.add_data_to_handler_status_graphic(event_time, self.handler_status)
+        self.event_manager.add_event(self.get_broken_time(), HANDLER_BROKEN_EVENT, 0)
+
+    def to_broken_handler(self, event_time):
+        if self.handler_status == PROCESSING:
+            self.to_orbit(event_time, self.handler_app_id)
+            self.event_manager.delete_event(HANDLER_COMPLETED_EVENT, 0)
+            self.handler_app_id = None
+        self.handler_status = BROKEN
+        self.add_data_to_handler_status_graphic(event_time, self.handler_status)
+        self.event_manager.add_event(self.get_recover_time(), HANDLER_RECOVER_EVENT, 0)
 
     def run(self):
-        while not self.app_manager.is_all_completed():
-            nearest_app_id = self.app_manager.get_nearest_app_id()
+        while not self.event_manager.all_events_over():
+            # print(self.event_manager.events, self.handler_status, self.handler_app_id)
+            event_time, event_type, app_id = self.event_manager.get_nearest_event()
 
-            # Если событие с учатием обработчика наступает быстрее
-            if self.handler_time < self.app_manager.get_time(nearest_app_id):
-                if self.handler_status == BROKEN:
-                    self.handler_status = FREE
-                else:
-                    if self.handler_status == PROCESSING:
-                        self.to_orbit(self.handler_app_id)
-                    self.handler_status = BROKEN
-                self.update_handler_time()
-                self.collect_handler_status_graphic_data()
-            else:
+            if event_type == APPLICATION_EVENT:
                 # Поступление заявки в систему:
-                if self.app_manager.get_status(nearest_app_id) == NOT_RECEIVED:
-                    self.to_active_app(nearest_app_id)
+                if self.app_manager.get_status(app_id) == NOT_RECEIVED:
+                    self.to_active_app(event_time, app_id)
                 # Если прибор свободен, то занимаем его ближайшей заявкой:
                 if self.handler_status == FREE:
-                    self.to_process_handler(nearest_app_id)
-                # Если прибор был занят текущей заявкой, то освобождаем его:
-                elif self.handler_app_id == nearest_app_id:
-                    self.to_finish_handler(nearest_app_id)
-                else:  # на орбиту
-                    self.to_orbit(nearest_app_id)
+                    self.to_process_handler(event_time, app_id)
+                else:  # иначе на орбиту
+                    self.to_orbit(event_time, app_id)
+            # Если обработчик завершил обработку текущей заявки:
+            elif event_type == HANDLER_COMPLETED_EVENT:
+                self.to_finish_handler(event_time)
+            # Если обработчик сломался:
+            elif event_type == HANDLER_BROKEN_EVENT:
+                self.to_recover_handler(event_time)
+            # Если обработчик восстановился
+            elif event_type == HANDLER_RECOVER_EVENT:
+                self.to_broken_handler(event_time)
 
-                # Обновление списка заявок:
-                self.app_manager.update_sorted_app_ids_list(nearest_app_id)
-
-                # Обновление индикатора выполнения:
-                self.progress_indicator.update(self.app_manager.get_progress())
+            # print(self.event_manager.events, self.handler_status, self.handler_app_id)
+            # input()
 
     def get_results(self, application_count, lm, mu, mu2, sg, dt1, dt2):
         """
@@ -77,9 +80,7 @@ class AlgorithmS2(Algorithm):
         :return:
         """
         start_algorithm_working_time = time()
-        self.set_parameters(application_count, lm, mu, sg)
-        self.mu2, self.dt1, self.dt2,  = mu2, dt1, dt2
-        self.handler_time = 0
+        self.set_parameters(application_count, lm, mu, mu2, sg, dt1, dt2)
         self.run()
         self.collected_data["data_for_plotting"]["probability_distribution_processed"] = \
             get_probability_of_processing_data(

@@ -1,10 +1,6 @@
 from basic.constants.algorithm_working import *
 
 
-APP_EVENT = 'a'
-HANDLER_EVENT = 'h'
-
-
 def get_probability_of_orbit_data(app_time_list: list, app_value_list: list,
                                   hs_time_list: list, hs_value_list: list) -> dict:
     # Объединяем данные:
@@ -22,7 +18,7 @@ def get_probability_of_orbit_data(app_time_list: list, app_value_list: list,
 
         if event_type == HANDLER_EVENT:
             is_app_in_handler = True if value == PROCESSING else False
-        elif event_type == APP_EVENT:
+        elif event_type == APPLICATION_EVENT:
             active_apps_count = value
 
         current_orbit_apps_count = active_apps_count - int(is_app_in_handler)

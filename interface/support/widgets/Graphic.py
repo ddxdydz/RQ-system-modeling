@@ -57,17 +57,16 @@ class Graphic(PlotWidget):
             )
 
     def add_graphic(self, data_for_plotting, graphic_plot_settings):
-        graphic_type = graphic_plot_settings["type"]
 
         # Удаляем последнее значение из данных для графиков для возможности отображения гистограм
         # Это последнее значение равняется изначальному значению и не влияет на общий результат
-        if graphic_type == "histogram":
+        if graphic_plot_settings["type"] == "histogram":
             data_for_plotting["value"].pop(-1)
 
         self.plot(
             data_for_plotting["time"],
             data_for_plotting["value"],
-            stepMode="center" if graphic_type == "histogram" else None,
+            stepMode="center" if graphic_plot_settings["type"] == "histogram" else None,
             fillLevel=graphic_plot_settings["fillLevel"],
             fillOutline=True,
             brush=mkBrush(**graphic_plot_settings["brush_parameters"]),

@@ -1,7 +1,6 @@
 from time import time
 
 from algorithms.Algorithm import Algorithm
-from algorithms.support.extra_plotting_data.get_probability_of_orbit_data import get_probability_of_orbit_data
 from algorithms.support.extra_plotting_data.get_probability_of_processing_data import *
 from basic.constants.algorithm_working import *
 
@@ -11,30 +10,25 @@ class AlgorithmS1(Algorithm):
         super().__init__(signal_to_change_progress_value)
 
     def run(self):
-        while not self.app_manager.is_all_completed():
-            nearest_app_id = self.app_manager.get_nearest_app_id()
+        while not self.event_manager.all_events_over():
+            event_time, event_type, app_id = self.event_manager.get_nearest_event()
 
-            # Поступление заявки в систему:
-            if self.app_manager.get_status(nearest_app_id) == NOT_RECEIVED:
-                self.to_active_app(nearest_app_id)
-            # Если прибор свободен, то занимаем его ближайшей заявкой:
-            if self.handler_status == FREE:
-                self.to_process_handler(nearest_app_id)
-            # Если прибор был занят текущей заявкой, то освобождаем его:
-            elif self.handler_app_id == nearest_app_id:
-                self.to_finish_handler(nearest_app_id)
-            else:  # на орбиту
-                self.to_orbit(nearest_app_id)
-
-            # Обновление списка заявок:
-            self.app_manager.update_sorted_app_ids_list(nearest_app_id)
-
-            # Обновление индикатора выполнения:
-            self.progress_indicator.update(self.app_manager.get_progress())
+            if event_type == APPLICATION_EVENT:
+                # Поступление заявки в систему:
+                if self.app_manager.get_status(app_id) == NOT_RECEIVED:
+                    self.to_active_app(event_time, app_id)
+                # Если прибор свободен, то занимаем его ближайшей заявкой:
+                if self.handler_status == FREE:
+                    self.to_process_handler(event_time, app_id)
+                else:  # иначе на орбиту
+                    self.to_orbit(event_time, app_id)
+            # Если обработчик завершил обработку текущей заявки:
+            elif event_type == HANDLER_COMPLETED_EVENT:
+                self.to_finish_handler(event_time)
 
     def get_results(self, application_count, lm, mu, sg):
         start_algorithm_working_time = time()
-        self.set_parameters(application_count, lm, mu, sg)
+        self.set(application_count, lm, mu, sg)
         self.run()
         self.collected_data["data_for_plotting"]["probability_distribution_processed"] = \
             get_probability_of_processing_data(

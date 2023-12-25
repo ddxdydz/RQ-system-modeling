@@ -102,14 +102,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             work_time_for_status = round(work_time, 3) if work_time >= 0.01 else 0.01
             self.status_bar.update_message(f"Обработка завершена за {work_time_for_status} сек. ")
             if alg_num == 1:
-                print(1)
                 self.tab1.plot_graphics(results["data_for_plotting"])
             elif alg_num == 2:
-                print(2)
-                print(results["data_for_plotting"]["probability_distribution_orbit"]["time"])
-                print(results["data_for_plotting"]["probability_distribution_orbit"]["value"])
-                print(results["data_for_plotting"]["handler_status_graphic"]["time"])
-                print(results["data_for_plotting"]["handler_status_graphic"]["value"])
                 self.tab2.plot_graphics(results["data_for_plotting"])
 
     def to_based_state(self):

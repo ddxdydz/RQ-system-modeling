@@ -20,9 +20,9 @@ def get_probability_of_processing_data(hs_time_list: list, hs_value_list: list) 
     working_time_sum = 0
     total_time_sum = 0
     for id_time in range(1, len(hs_time_list)):
-        hs_status_in_range = hs_value_list[id_time - 1]
         start_time_range = hs_time_list[id_time - 1]
         end_time_range = hs_time_list[id_time]
+        hs_status_in_range = hs_value_list[id_time - 1]
         delta_time = end_time_range - start_time_range
         if hs_status_in_range == 1:
             working_time_sum += delta_time
