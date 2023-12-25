@@ -1,7 +1,7 @@
 from basic.constants.plotting import PD_GRAPHIC_FREQUENCY
 
 
-def add_probability_distribution_data(hs_time_list: list, hs_value_list: list) -> dict:
+def get_probability_of_processing_data(hs_time_list: list, hs_value_list: list) -> dict:
 
     # Добавление дополнительных значений для плавности графика:
     step = (hs_time_list[-1] - hs_time_list[0]) / PD_GRAPHIC_FREQUENCY

@@ -2,11 +2,12 @@ from time import time
 
 from algorithms.Algorithm import Algorithm
 from algorithms.support.get_time import get_time
-from algorithms.support.extra_plotting_data.probability_distribution_data import *
+from algorithms.support.extra_plotting_data.get_probability_of_processing_data import *
+from algorithms.support.extra_plotting_data.get_probability_of_orbit_data import *
 from basic.constants.algorithm_working import *
 
 
-class Algorithm1(Algorithm):
+class AlgorithmS2(Algorithm):
     def __init__(self, signal_to_change_progress_value=None):
         super().__init__(signal_to_change_progress_value)
 
@@ -77,12 +78,20 @@ class Algorithm1(Algorithm):
         """
         start_algorithm_working_time = time()
         self.set_parameters(application_count, lm, mu, sg)
-        self.mu2, self.dt1, self.dt2 = mu2, dt1, dt2
+        self.mu2, self.dt1, self.dt2,  = mu2, dt1, dt2
+        self.handler_time = 0
         self.run()
         self.collected_data["data_for_plotting"]["probability_distribution_processed"] = \
-            add_probability_distribution_data(
-                self.collected_data["data_for_plotting"]["handler_status_graphic"]["time"],
-                self.collected_data["data_for_plotting"]["handler_status_graphic"]["value"]
+            get_probability_of_processing_data(
+                self.collected_data["data_for_plotting"]["handler_status_graphic"]["time"].copy(),
+                self.collected_data["data_for_plotting"]["handler_status_graphic"]["value"].copy()
+            )
+        self.collected_data["data_for_plotting"]["probability_distribution_orbit"] = \
+            get_probability_of_orbit_data(
+                self.collected_data["data_for_plotting"]["application_count_graphic"]["time"].copy(),
+                self.collected_data["data_for_plotting"]["application_count_graphic"]["value"].copy(),
+                self.collected_data["data_for_plotting"]["handler_status_graphic"]["time"].copy(),
+                self.collected_data["data_for_plotting"]["handler_status_graphic"]["value"].copy()
             )
         self.collected_data["algorithm_working_time"] = time() - start_algorithm_working_time
         self.collected_data["status"] = -1
@@ -90,7 +99,7 @@ class Algorithm1(Algorithm):
 
 
 def main(application_count, lm, mu, mu2, sg, dt1, dt2):
-    return Algorithm1().get_results(application_count, lm, mu, mu2, sg, dt1, dt2)
+    return AlgorithmS2().get_results(application_count, lm, mu, mu2, sg, dt1, dt2)
 
 
 if __name__ == '__main__':

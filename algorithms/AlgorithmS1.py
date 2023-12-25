@@ -1,11 +1,12 @@
 from time import time
 
 from algorithms.Algorithm import Algorithm
-from algorithms.support.extra_plotting_data.probability_distribution_data import *
+from algorithms.support.extra_plotting_data.get_probability_of_orbit_data import get_probability_of_orbit_data
+from algorithms.support.extra_plotting_data.get_probability_of_processing_data import *
 from basic.constants.algorithm_working import *
 
 
-class Algorithm1(Algorithm):
+class AlgorithmS1(Algorithm):
     def __init__(self, signal_to_change_progress_value=None):
         super().__init__(signal_to_change_progress_value)
 
@@ -36,9 +37,9 @@ class Algorithm1(Algorithm):
         self.set_parameters(application_count, lm, mu, sg)
         self.run()
         self.collected_data["data_for_plotting"]["probability_distribution_processed"] = \
-            add_probability_distribution_data(
-                self.collected_data["data_for_plotting"]["handler_status_graphic"]["time"],
-                self.collected_data["data_for_plotting"]["handler_status_graphic"]["value"]
+            get_probability_of_processing_data(
+                self.collected_data["data_for_plotting"]["handler_status_graphic"]["time"].copy(),
+                self.collected_data["data_for_plotting"]["handler_status_graphic"]["value"].copy()
             )
         self.collected_data["algorithm_working_time"] = time() - start_algorithm_working_time
         self.collected_data["status"] = -1
@@ -46,7 +47,7 @@ class Algorithm1(Algorithm):
 
 
 def main(application_count, lm, mu, sg):
-    return Algorithm1().get_results(application_count, lm, mu, sg)
+    return AlgorithmS1().get_results(application_count, lm, mu, sg)
 
 
 if __name__ == '__main__':

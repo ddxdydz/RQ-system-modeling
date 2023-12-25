@@ -1,0 +1,2 @@
+pyuic5 C:\Users\User\Documents\GitHub\Simulation-modeling-of-queuing-systems\interface\ui\MainWindow.ui -o C:\Users\User\Documents\GitHub\Simulation-modeling-of-queuing-systems\interface\ui\MainWindow.py
+
