@@ -1,7 +1,7 @@
 from PIL import Image
 from PIL.ImageQt import ImageQt
 from PyQt5.QtGui import QIcon, QPixmap
-from data.icon.im_colors import *
+from data.icons.im_colors import *
 
 WIDTH, HEIGHT = (96, 96)
 MODE = "RGBA"

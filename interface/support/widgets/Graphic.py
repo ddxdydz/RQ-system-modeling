@@ -97,3 +97,5 @@ class Graphic(PlotWidget):
         )
         self.update_left_ticks_text(y_data=y_data)
         self.update_range(x_data=x_data)
+        ax = self.getAxis('bottom')
+        ax.setTicks([[(v, str(v)) for v in data_for_plotting["counts"]]])
