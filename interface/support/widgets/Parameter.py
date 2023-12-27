@@ -24,8 +24,8 @@ class Parameter(QLineEdit):
 
     def get_value(self):
         self.check_parameters_fullness()
-        value = int(self.text().replace(',', '.'))
-        if not self.is_int:
-            value = float(self.text().replace(',', '.'))
+        value = float(self.text().replace(',', '.'))
+        if self.is_int:
+            value = int(value)
         self.check_parameters_range(value)
         return value

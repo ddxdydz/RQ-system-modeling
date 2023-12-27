@@ -14,29 +14,25 @@ class ProbabilityProcessingGraphic(Graphic):
             "maximum_value": 100,
             "background_style": "w",
             "show_grid": {"x": True, "y": True},
-            "set_mouse_enabled": {"x": False, "y": False}
+            "set_mouse_enabled": {"x": False, "y": False},
+            "range_oy": (0, 100)
         }
         self.graphic_plot_free_settings = {
             "brush_parameters": {"color": (255, 0, 0, 0)},
             "pen_parameters": {"color": (0, 0, 255, 200), "width": 1},
-            "fillLevel": None,
-            "type": "not_histogram",
-            "range_oy": {"min": 0, "max": 100}
+            "fillLevel": None
         },
 
         self.graphic_plot_processed_settings = {
-            "plot_widget_key": "probability_distribution_graphic_widget",
             "brush_parameters": {"color": (0, 0, 255, 0)},
             "pen_parameters": {"color": (255, 0, 0, 200), "width": 1},
-            "fillLevel": None,
-            "type": "not_histogram",
-            "range_oy": {"min": 0, "max": 100}
+            "fillLevel": None
         }
         self.layout_settings = {"stretch": 4}
         super().__init__(self.graphic_widget_settings, self.layout_settings, installation_layout)
 
     def plot_probability_distribution_free_graphic(self, data_for_plotting):
-        super().add_graphic(data_for_plotting, self.graphic_plot_free_settings)
+        self.add_line_graph(data_for_plotting, self.graphic_plot_free_settings)
 
     def plot_probability_distribution_processed_graphic(self, data_for_plotting):
-        super().add_graphic(data_for_plotting, self.graphic_plot_processed_settings)
+        self.add_line_graph(data_for_plotting, self.graphic_plot_processed_settings)

@@ -26,7 +26,8 @@ class Algorithm:
 
         self.event_manager = EventManager()
         for i in range(application_count):
-            self.event_manager.add_event(self.get_arrival_time(), APPLICATION_EVENT, i)
+            self.event_manager.add_event(
+                self.get_arrival_delta_time(), APPLICATION_EVENT, i)
 
         self.handler_status = FREE
         self.handler_app_id = None
@@ -41,13 +42,13 @@ class Algorithm:
             "status": 0
         }
 
-    def get_arrival_time(self) -> float:
+    def get_arrival_delta_time(self) -> float:
         return get_time(self.lm)
 
-    def get_handler_time(self) -> float:
+    def get_handler_delta_time(self) -> float:
         return get_time(self.mu)
 
-    def get_orbit_time(self) -> float:
+    def get_orbit_delta_time(self) -> float:
         return get_time(self.sg)
 
     def add_data_to_application_count_graphic(self, time: int, value: int):
@@ -67,7 +68,7 @@ class Algorithm:
         self.handler_status = PROCESSING
         self.handler_app_id = app_id
         self.event_manager.add_event(
-            event_time + self.get_handler_time(),
+            event_time + self.get_handler_delta_time(),
             HANDLER_COMPLETED_EVENT,
             0
         )
@@ -80,10 +81,11 @@ class Algorithm:
         self.add_data_to_application_count_graphic(
             event_time, self.app_manager.active_applications_count)
         self.add_data_to_handler_status_graphic(event_time, self.handler_status)
+        self.progress_indicator.update(self.app_manager.get_progress())
 
     def to_orbit(self, event_time, app_id: int):
         self.event_manager.add_event(
-            event_time + self.get_handler_time(),
+            event_time + self.get_orbit_delta_time(),
             APPLICATION_EVENT,
             app_id
         )

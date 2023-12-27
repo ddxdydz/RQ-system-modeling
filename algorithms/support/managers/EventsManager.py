@@ -23,7 +23,7 @@ class EventManager:
         for i in range(len(self.events)):
             _, event_type, obj_id = self.events[i]
             if del_event_type == event_type and del_obj_id == obj_id:
-                self.events.remove(i)
+                self.events.pop(i)
                 break
 
     def get_nearest_event(self):

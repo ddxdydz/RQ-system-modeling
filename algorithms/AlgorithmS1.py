@@ -10,7 +10,7 @@ class AlgorithmS1(Algorithm):
         super().__init__(signal_to_change_progress_value)
 
     def run(self):
-        while not self.event_manager.all_events_over():
+        while not self.app_manager.is_all_completed():
             event_time, event_type, app_id = self.event_manager.get_nearest_event()
 
             if event_type == APPLICATION_EVENT:

@@ -13,15 +13,19 @@ class AlgorithmS2(Algorithm):
 
         self.mu2, self.dt1, self.dt2 = None, None, None
 
-    def set_parameters(self, application_count, lm, mu, mu2, sg, dt1, dt2):
-        self.set(application_count, lm, mu, sg)
+    def set_parameters(self, application_count, lm, mu1, mu2, sg, dt1, dt2):
+        self.set(application_count, lm, mu1, sg)
         self.mu2, self.dt1, self.dt2, = mu2, dt1, dt2
-        self.event_manager.add_event(self.get_broken_time(), HANDLER_BROKEN_EVENT, None)
+        self.event_manager.add_event(
+            self.get_broken_delta_time(),
+            HANDLER_BROKEN_EVENT,
+            0
+        )
 
-    def get_recover_time(self):
+    def get_recover_delta_time(self):
         return get_time(self.mu2)
 
-    def get_broken_time(self):
+    def get_broken_delta_time(self):
         if self.handler_status == FREE:
             return get_time(self.dt1)
         else:  # Если был занят
@@ -30,20 +34,27 @@ class AlgorithmS2(Algorithm):
     def to_recover_handler(self, event_time):
         self.handler_status = FREE
         self.add_data_to_handler_status_graphic(event_time, self.handler_status)
-        self.event_manager.add_event(self.get_broken_time(), HANDLER_BROKEN_EVENT, 0)
+        self.event_manager.add_event(
+            event_time + self.get_broken_delta_time(),
+            HANDLER_BROKEN_EVENT,
+            0
+        )
 
     def to_broken_handler(self, event_time):
         if self.handler_status == PROCESSING:
             self.to_orbit(event_time, self.handler_app_id)
             self.event_manager.delete_event(HANDLER_COMPLETED_EVENT, 0)
             self.handler_app_id = None
+        self.event_manager.add_event(
+            event_time + self.get_recover_delta_time(),
+            HANDLER_RECOVER_EVENT,
+            0
+        )
         self.handler_status = BROKEN
         self.add_data_to_handler_status_graphic(event_time, self.handler_status)
-        self.event_manager.add_event(self.get_recover_time(), HANDLER_RECOVER_EVENT, 0)
 
     def run(self):
-        while not self.event_manager.all_events_over():
-            # print(self.event_manager.events, self.handler_status, self.handler_app_id)
+        while not self.app_manager.is_all_completed():
             event_time, event_type, app_id = self.event_manager.get_nearest_event()
 
             if event_type == APPLICATION_EVENT:
@@ -60,19 +71,16 @@ class AlgorithmS2(Algorithm):
                 self.to_finish_handler(event_time)
             # Если обработчик сломался:
             elif event_type == HANDLER_BROKEN_EVENT:
-                self.to_recover_handler(event_time)
+                self.to_broken_handler(event_time)
             # Если обработчик восстановился
             elif event_type == HANDLER_RECOVER_EVENT:
-                self.to_broken_handler(event_time)
+                self.to_recover_handler(event_time)
 
-            # print(self.event_manager.events, self.handler_status, self.handler_app_id)
-            # input()
-
-    def get_results(self, application_count, lm, mu, mu2, sg, dt1, dt2):
+    def get_results(self, application_count, lm, mu1, mu2, sg, dt1, dt2):
         """
         :param application_count:
         :param lm: интенсивность прихода заявок
-        :param mu: итенсивность обслуживания
+        :param mu1: интенсивность обслуживания
         :param mu2: время восстановления
         :param sg: время на орбите
         :param dt1: время выхода из строя если свободен
@@ -80,7 +88,7 @@ class AlgorithmS2(Algorithm):
         :return:
         """
         start_algorithm_working_time = time()
-        self.set_parameters(application_count, lm, mu, mu2, sg, dt1, dt2)
+        self.set_parameters(application_count, lm, mu1, mu2, sg, dt1, dt2)
         self.run()
         self.collected_data["data_for_plotting"]["probability_distribution_processed"] = \
             get_probability_of_processing_data(
@@ -96,6 +104,7 @@ class AlgorithmS2(Algorithm):
             )
         self.collected_data["algorithm_working_time"] = time() - start_algorithm_working_time
         self.collected_data["status"] = -1
+
         return self.collected_data
 
 
@@ -107,6 +116,6 @@ if __name__ == '__main__':
     result = main(application_count=4, lm=3, mu=1, mu2=1, sg=1, dt1=0.5, dt2=0.5)
     for name, data in result["data_for_plotting"].items():
         print("\t", name)
-        for key, values in data.items():
-            print(key, values)
+        for time, value in zip(*data.values()):
+            print(time, value)
     print(result["algorithm_working_time"])

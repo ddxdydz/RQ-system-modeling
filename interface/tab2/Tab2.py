@@ -14,10 +14,6 @@ class Tab2:
         self.parameter_manager = ParameterManager(parameters_installation_layout)
 
     def plot_graphics(self, data_for_plotting):
-        for time, value in zip(data_for_plotting["handler_status_graphic"]["time"],
-                               data_for_plotting["handler_status_graphic"]["value"]):
-            print(time, value)
-
         self.clear_graphics()  # Очищаем пространство от прошлых графиков
         self.app_count_graphic.plot_graphic(data_for_plotting["application_count_graphic"])
         self.handler_status_graphic.plot_graphic(data_for_plotting["handler_status_graphic"])

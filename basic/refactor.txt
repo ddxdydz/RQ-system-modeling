@@ -1,2 +1,27 @@
 pyuic5 C:\Users\User\Documents\GitHub\Simulation-modeling-of-queuing-systems\interface\ui\MainWindow.ui -o C:\Users\User\Documents\GitHub\Simulation-modeling-of-queuing-systems\interface\ui\MainWindow.py
+    times = {0: 0}  # количество заявок на орбите: время нахождения
+    last_time = 0
+    last_orbit_apps_count = 0
 
+    for time, event_type, value in events:
+
+        if event_type == HS:
+            is_app_in_handler = True if value == PROCESSING else False
+        elif event_type == AC:
+            active_apps_count = value
+
+        current_orbit_apps_count = active_apps_count - int(is_app_in_handler)
+        if current_orbit_apps_count != last_orbit_apps_count:
+
+            times[last_orbit_apps_count] += time - last_time
+
+            if current_orbit_apps_count not in times.keys():
+                times[current_orbit_apps_count] = 0
+            last_time, orbit_apps_count = time, current_orbit_apps_count
+
+    total_time = app_time_list[-1] - app_time_list[0]
+    print(times)
+    return {
+        "time": list(times.keys()),
+        "value": [(time / total_time) * 100 for time in times.values()]
+    }

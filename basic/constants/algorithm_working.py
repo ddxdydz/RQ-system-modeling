@@ -10,6 +10,7 @@ BROKEN = 2  # В обработке / занято
 
 # Типы событий
 APPLICATION_EVENT = 'a'
+HANDLER_EVENT = 'h'
 HANDLER_COMPLETED_EVENT = 'C'
 HANDLER_BROKEN_EVENT = 'B'
 HANDLER_RECOVER_EVENT = 'R'

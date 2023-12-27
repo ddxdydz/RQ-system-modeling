@@ -11,15 +11,15 @@ class ParameterManager:
             range_max=999,
             default=3
         )
-        self.mu = ParameterType1(
-            label_text="μ: ",
+        self.mu1 = ParameterType1(
+            label_text="μ₁:",
             installation_layout=installation_layout,
             range_min=0.001,
             range_max=999,
             default=1
         )
         self.mu2 = ParameterType1(
-            label_text="μ₁:",
+            label_text="μ₂:",
             installation_layout=installation_layout,
             range_min=0.001,
             range_max=999,
@@ -59,7 +59,7 @@ class ParameterManager:
         return {
             "application_count": self.application_count.get_value(),
             "lm": self.lm.get_value(),
-            "mu": self.mu.get_value(),
+            "mu1": self.mu1.get_value(),
             "mu2": self.mu2.get_value(),
             "sg": self.sg.get_value(),
             "dt1": self.dt1.get_value(),
