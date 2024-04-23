@@ -40,7 +40,7 @@ def get_probability_of_orbit_data(app_time_list: list, app_value_list: list,
             last_time, last_count = time, count
     total_time = orbit_time_list[-1] - orbit_time_list[0]
     counts = list(times.keys())
-    values = list([value * 100 / total_time for value in times.values()])
+    values = list([value / total_time for value in times.values()])
 
     if -1 in counts:
         index = counts.index(-1)

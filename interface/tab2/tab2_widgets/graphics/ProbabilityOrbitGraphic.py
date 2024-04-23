@@ -6,16 +6,17 @@ class ProbabilityOrbitGraphic(Graphic):
         self.graphic_widget_settings = {
             "title": "Распределение вероятностей нахождения на орбите",
             "styles_title": {"color": "b", "font-size": "8pt"},
-            "left_label": "Вероятность (%)",
+            "left_label": "Вероятность",
             "bottom_label":  "Число заявок на орбите",
             "styles_labels": {"color": "#f00", "font-size": "8pt"},
             "max_count_of_left_ticks": 2,
+            "ndigits_round_left_ticks": 1,  # если 0, то округляется до целого вверх
             "indent_left_axis_px": 35,
-            "maximum_value": None,
+            "maximum_value": 1,
             "background_style": "w",
             "show_grid": {"x": True, "y": True},
             "set_mouse_enabled": {"x": False, "y": False},
-            "range_oy": None
+            "range_oy": (0, 1)
         }
         self.graphic_plot_settings = {
             "brush_parameters": {"color": (0, 0, 255, 80)},

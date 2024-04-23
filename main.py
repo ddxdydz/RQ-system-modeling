@@ -157,11 +157,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             with open(file_name, mode="wt", encoding="UTF-8") as file:
                 if 'data_for_plotting' in results:
-                    for c, v in zip(
-                            results["data_for_plotting"]["probability_distribution_orbit"]["counts"],
-                            results["data_for_plotting"]["probability_distribution_orbit"]["values"]
-                    ):
-                        file.write(f"{c}\t{v}\n")
+                    for v in results["data_for_plotting"]["probability_distribution_orbit"]["values"]:
+                        file.write(f"{v}\n")
 
 
 def except_hook(cls, exception, traceback):

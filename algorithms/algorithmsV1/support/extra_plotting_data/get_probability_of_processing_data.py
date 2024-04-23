@@ -27,6 +27,6 @@ def get_probability_of_processing_data(hs_time_list: list, hs_value_list: list) 
         if hs_status_in_range == 1:
             working_time_sum += delta_time
         total_time_sum += delta_time
-        probability_distribution_data.append(working_time_sum * 100 / total_time_sum)
+        probability_distribution_data.append(working_time_sum / total_time_sum)
 
     return {"time": hs_time_list, "value": probability_distribution_data}

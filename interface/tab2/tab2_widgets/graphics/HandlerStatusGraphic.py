@@ -10,6 +10,7 @@ class HandlerStatusGraphic(Graphic):
             "bottom_label": None,
             "styles_labels": {"color": "#f00", "font-size": "8pt"},
             "max_count_of_left_ticks": 15,
+            "ndigits_round_left_ticks": 0,  # если 0, то округляется до целого вверх
             "indent_left_axis_px": 35,
             "maximum_value": 2,
             "background_style": "w",

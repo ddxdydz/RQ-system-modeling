@@ -14,7 +14,7 @@ def get_probability_of_orbit_data_from_orbit(orbit_time_list: list, orbit_value_
     total_time = orbit_time_list[-1]
 
     counts = list(times.keys())
-    values = list([value * 100 / total_time for value in times.values()])
+    values = list([value / total_time for value in times.values()])
 
     return {
         "counts": counts,
