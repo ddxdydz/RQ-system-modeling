@@ -1,4 +1,4 @@
-class ProgressIndicator:
+class StatusBarUpdater:
     def __init__(self, signal_to_change_progress_value=None):
         self.signal_to_change_progress_value = signal_to_change_progress_value
         self.last_progress_value_for_indicator = 0

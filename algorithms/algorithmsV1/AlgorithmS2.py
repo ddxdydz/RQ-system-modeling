@@ -1,9 +1,9 @@
 from time import time
 
-from algorithms.Algorithm import Algorithm
-from algorithms.support.get_time import get_time
-from algorithms.support.extra_plotting_data.get_probability_of_processing_data import *
-from algorithms.support.extra_plotting_data.get_probability_of_orbit_data import *
+from algorithms.algorithmsV1.Algorithm import Algorithm
+from algorithms.algorithmsV1.support.get_time import get_time
+from algorithms.algorithmsV1.support.extra_plotting_data.get_probability_of_processing_data import *
+from algorithms.algorithmsV1.support.extra_plotting_data.get_probability_of_orbit_data import *
 from basic.constants.algorithm_working import *
 
 
@@ -113,7 +113,7 @@ def main(application_count, lm, mu, mu2, sg, dt1, dt2):
 
 
 if __name__ == '__main__':
-    result = main(application_count=4, lm=3, mu=1, mu2=1, sg=1, dt1=0.5, dt2=0.5)
+    result = main(application_count=800, lm=3, mu=1, mu2=1, sg=1, dt1=0.5, dt2=0.5)
     for name, data in result["data_for_plotting"].items():
         print("\t", name)
         for time, value in zip(*data.values()):

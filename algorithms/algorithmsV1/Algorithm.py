@@ -1,14 +1,13 @@
-from algorithms.support.managers.ApplicationManager import ApplicationManager
-from algorithms.support.managers.ProgressIndicator import ProgressIndicator
-from algorithms.support.managers.EventsManager import EventManager
-from algorithms.support.get_time import get_time
+from algorithms.algorithmsV1.support.managers.ApplicationManager import ApplicationManager
+from interface.support.controllers.StatusBarUpdater import StatusBarUpdater
+from algorithms.algorithmsV1.support.managers.EventsManager import EventManager
+from algorithms.algorithmsV1.support.get_time import get_time
 from basic.constants.algorithm_working import *
 
 
 class Algorithm:
     def __init__(self, signal_to_change_progress_value=None):
-        self.progress_indicator = \
-            ProgressIndicator(signal_to_change_progress_value)
+        self.progress_indicator = StatusBarUpdater(signal_to_change_progress_value)
 
         self.lm, self.mu, self.sg = 0, 0, 0
         self.app_manager = None

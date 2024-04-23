@@ -1,12 +1,12 @@
 import sys
 
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QApplication
 
 # Прямое подключение скрытых зависимостей для избежания неполной сборки exe-файла через pyinstaller:
-import pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5
-import pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt5
-import pyqtgraph.imageview.ImageViewTemplate_pyqt5
+# import pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5
+# import pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt5
+# import pyqtgraph.imageview.ImageViewTemplate_pyqt5
 
 from basic.constants.error_indexes import *
 from basic.constants.window_settings import *
@@ -14,13 +14,15 @@ from basic.errors.FullnessError import FullnessError
 from basic.errors.RangeError import RangeError
 from interface.ui.MainWindow import Ui_MainWindow
 from interface.support.widgets.StatusBar import StatusBar
-from interface.support.widgets.Thread import Thread
+from interface.support.controllers.Thread import Thread
 from interface.support.get_window_size import get_window_size
 from interface.support.get_ico_from_code import get_ico
 from interface.tab1.Tab1 import Tab1
 from interface.tab2.Tab2 import Tab2
-from algorithms.AlgorithmS1 import AlgorithmS1
-from algorithms.AlgorithmS2 import AlgorithmS2
+from interface.tab3.Tab3 import Tab3
+from algorithms.algorithmsV1.AlgorithmS1 import AlgorithmS1
+from algorithms.algorithmsV1.AlgorithmS2 import AlgorithmS2
+from algorithms.algorithmsV2.AlgorithmS2 import AlgorithmS2 as AlgorithmS2V2
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -30,6 +32,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Выносим процесс вычисления результатов алгоритма в отдельный поток для разгрузки основного цикла:
         self.thread_alg1 = Thread(AlgorithmS1)
         self.thread_alg2 = Thread(AlgorithmS2)
+        self.thread_alg3 = Thread(AlgorithmS2V2)
         # В этом случае управление вернёться к основному циклу обработки событий после запуска потока.
         # Это делается для возможности обновления графического интерфейса без ожидания окончания симуляции.
 
@@ -37,6 +40,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.tab1 = Tab1(self.layout_parameters_tab1, self.layout_graphics_tab1)
         self.tab2 = Tab2(self.layout_parameters_tab2, self.layout_graphics_tab2)
+        self.tab3 = Tab3(self.layout_parameters_tab3, self.layout_graphics_tab3)
         self.status_bar = StatusBar(self.statusBar())
 
         self.init_main_ui()
@@ -52,6 +56,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Подключение кнопок к вызываемым функциям:
         self.launch_button_tab1.clicked.connect(self.launch)
         self.launch_button_tab2.clicked.connect(self.launch)
+        self.launch_button_tab3.clicked.connect(self.launch)
+        self.tab2.file_button.clicked.connect(lambda: self.print_to_file(2))
+        self.tab3.file_button.clicked.connect(lambda: self.print_to_file(3))
         self.status_bar.connect_stop_button(self.stop)
 
         # После завершения алгоритма будут вызваны переданные функции:
@@ -59,10 +66,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.thread_alg1.finished.connect(lambda: self.process_results(1))
         self.thread_alg2.finished.connect(lambda: self.to_based_state())
         self.thread_alg2.finished.connect(lambda: self.process_results(2))
+        self.thread_alg3.finished.connect(lambda: self.to_based_state())
+        self.thread_alg3.finished.connect(lambda: self.process_results(3))
 
         # Подключение функции для возможности её вызова из потока по сигналу:
         self.thread_alg1.change_value.connect(self.status_bar.set_progress_value)
         self.thread_alg2.change_value.connect(self.status_bar.set_progress_value)
+        self.thread_alg3.change_value.connect(self.status_bar.set_progress_value)
 
     def launch(self):
         try:
@@ -73,10 +83,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.launch_button_tab1.setEnabled(False)
                 self.thread_alg1.set_parameters(self.tab1.get_parameters())
                 self.thread_alg1.start()
-            else:
+            elif self.tabWidget.currentIndex() == 1:
                 self.launch_button_tab2.setEnabled(False)
                 self.thread_alg2.set_parameters(self.tab2.get_parameters())
                 self.thread_alg2.start()
+            else:
+                self.launch_button_tab3.setEnabled(False)
+                self.thread_alg3.set_parameters(self.tab3.get_parameters())
+                self.thread_alg3.start()
         except ValueError:
             self.status_bar.update_message("Ошибка: Некорректные значения")
             self.to_based_state()
@@ -90,10 +104,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def stop(self):
         self.thread_alg1.terminate()
         self.thread_alg2.terminate()
+        self.thread_alg3.terminate()
         self.to_based_state()
 
     def process_results(self, alg_num):
-        results = self.thread_alg1.results if alg_num == 1 else self.thread_alg2.results
+        if alg_num == 1:
+            results = self.thread_alg1.results
+        elif alg_num == 2:
+            results = self.thread_alg2.results
+        else:
+            results = self.thread_alg3.results
+
         if results["status"] == TERMITE:
             self.status_bar.update_message("Обработка отменена")
             self.to_based_state()
@@ -105,15 +126,42 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.tab1.plot_graphics(results["data_for_plotting"])
             elif alg_num == 2:
                 self.tab2.plot_graphics(results["data_for_plotting"])
+            elif alg_num == 3:
+                self.tab3.plot_graphics(results["data_for_plotting"])
 
     def to_based_state(self):
         self.launch_button_tab1.setEnabled(True)
         self.launch_button_tab2.setEnabled(True)
+        self.launch_button_tab3.setEnabled(True)
         self.status_bar.hide_progress()
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key.Key_Enter - 1:
             self.launch()
+
+    def print_to_file(self, alg_num):
+        file = QtWidgets.QFileDialog.getSaveFileName(
+            parent=None, caption="Выберите место для сохранения файла",
+            directory="c:\\",
+            filter="All (*);;txt (*.txt *.txt)",
+            initialFilter="txt (*.txt *.txt)"
+        )
+        file_name = file[0]
+
+        if file_name != "":
+
+            if alg_num == 2:
+                results = self.thread_alg2.results
+            else:
+                results = self.thread_alg3.results
+
+            with open(file_name, mode="wt", encoding="UTF-8") as file:
+                if 'data_for_plotting' in results:
+                    for c, v in zip(
+                            results["data_for_plotting"]["probability_distribution_orbit"]["counts"],
+                            results["data_for_plotting"]["probability_distribution_orbit"]["values"]
+                    ):
+                        file.write(f"{c}\t{v}\n")
 
 
 def except_hook(cls, exception, traceback):

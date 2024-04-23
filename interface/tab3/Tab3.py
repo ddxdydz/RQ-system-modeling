@@ -8,7 +8,7 @@ from interface.tab2.tab2_widgets.graphics.ProbabilityOrbitGraphic import Probabi
 from interface.tab2.tab2_widgets.parameters.ParameterManager import ParameterManager
 
 
-class Tab2:
+class Tab3:
     def __init__(self, parameters_installation_layout, graphics_installation_layout):
         self.app_count_graphic = AppCountGraphic(graphics_installation_layout)
         self.handler_status_graphic = HandlerStatusGraphic(graphics_installation_layout)

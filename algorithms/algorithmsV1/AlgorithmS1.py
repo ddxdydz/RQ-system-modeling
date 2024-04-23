@@ -1,7 +1,7 @@
 from time import time
 
-from algorithms.Algorithm import Algorithm
-from algorithms.support.extra_plotting_data.get_probability_of_processing_data import *
+from algorithms.algorithmsV1.Algorithm import Algorithm
+from algorithms.algorithmsV1.support.extra_plotting_data.get_probability_of_processing_data import *
 from basic.constants.algorithm_working import *
 
 
@@ -28,8 +28,10 @@ class AlgorithmS1(Algorithm):
 
     def get_results(self, application_count, lm, mu, sg):
         start_algorithm_working_time = time()
+
         self.set(application_count, lm, mu, sg)
         self.run()
+
         self.collected_data["data_for_plotting"]["probability_distribution_processed"] = \
             get_probability_of_processing_data(
                 self.collected_data["data_for_plotting"]["handler_status_graphic"]["time"].copy(),
@@ -37,6 +39,7 @@ class AlgorithmS1(Algorithm):
             )
         self.collected_data["algorithm_working_time"] = time() - start_algorithm_working_time
         self.collected_data["status"] = -1
+        
         return self.collected_data
 
 

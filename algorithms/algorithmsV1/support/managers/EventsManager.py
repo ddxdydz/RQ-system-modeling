@@ -1,4 +1,4 @@
-from algorithms.support.dih_search import dih_search
+from algorithms.algorithmsV1.support.dih_search import dih_search
 
 
 class EventManager:
