@@ -1,4 +1,5 @@
 pyinstaller --onefile --windowed --icon program.ico program.py
+pyinstaller --onefile --windowed --icon C:\Users\UserLog.ru\PycharmProjects\Simulation-modeling-of-queuing-systems\data\icons\app_icon.ico C:\Users\UserLog.ru\PycharmProjects\Simulation-modeling-of-queuing-systems\main.py
 pyuic5 C:\Users\User\Documents\GitHub\Simulation-modeling-of-queuing-systems\interface\ui\MainWindow.ui -o C:\Users\User\Documents\GitHub\Simulation-modeling-of-queuing-systems\interface\ui\MainWindow.py
     times = {0: 0}  # количество заявок на орбите: время нахождения
     last_time = 0

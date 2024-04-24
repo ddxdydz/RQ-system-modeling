@@ -80,7 +80,6 @@ class Graphic(PlotWidget):
             else:
                 next_tick = round(next_tick, ndigits)
             ticks.append(next_tick)
-        print(ticks)
         ay.setTicks([[(v, str(v)) for v in ticks]])
 
     def set_visual_range_x(self, x_data):

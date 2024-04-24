@@ -20,9 +20,9 @@ from interface.support.get_ico_from_code import get_ico
 from interface.tab1.Tab1 import Tab1
 from interface.tab2.Tab2 import Tab2
 from interface.tab3.Tab3 import Tab3
-from algorithms.algorithmsV1.AlgorithmS1 import AlgorithmS1
-from algorithms.algorithmsV1.AlgorithmS2 import AlgorithmS2
-from algorithms.algorithmsV2.AlgorithmS2 import AlgorithmS2 as AlgorithmS2V2
+from algorithms.AlgorithmTab1 import AlgorithmTab1
+from algorithms.AlgorithmTab2 import AlgorithmTab2
+from algorithms.AlgorithmTab3 import AlgorithmTab3
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -30,9 +30,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
 
         # Выносим процесс вычисления результатов алгоритма в отдельный поток для разгрузки основного цикла:
-        self.thread_alg1 = Thread(AlgorithmS1)
-        self.thread_alg2 = Thread(AlgorithmS2)
-        self.thread_alg3 = Thread(AlgorithmS2V2)
+        self.thread_alg1 = Thread(AlgorithmTab1)
+        self.thread_alg2 = Thread(AlgorithmTab2)
+        self.thread_alg3 = Thread(AlgorithmTab3)
         # В этом случае управление вернёться к основному циклу обработки событий после запуска потока.
         # Это делается для возможности обновления графического интерфейса без ожидания окончания симуляции.
 

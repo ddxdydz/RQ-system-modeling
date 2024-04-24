@@ -289,4 +289,4 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab2), _translate("MainWindow", "Ненадёжный прибор"))
         self.label_parameters_4.setText(_translate("MainWindow", "Параметры:"))
         self.launch_button_tab3.setText(_translate("MainWindow", "Запуск"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab3), _translate("MainWindow", "Ненадёжный прибор2"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab3), _translate("MainWindow", "MMPP RQ-система с ненадежным прибором"))

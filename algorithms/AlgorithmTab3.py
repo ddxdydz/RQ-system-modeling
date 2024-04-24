@@ -1,11 +1,11 @@
 from time import time
 from math import inf
 
-from algorithms.algorithmsV2.Algorithm import Algorithm
-from algorithms.algorithmsV1.support.get_time import get_time
-from algorithms.algorithmsV1.support.extra_plotting_data.get_probability_of_processing_data import *
-from algorithms.algorithmsV1.support.extra_plotting_data.get_probability_of_orbit_data import *
-from algorithms.algorithmsV2.support.extra_plotting_data.get_probability_of_orbit_data import *
+from algorithms.Algorithm import Algorithm
+from algorithms.support.get_time import get_time
+from algorithms.support.extra_plotting_data.get_probability_of_processing_data import *
+from algorithms.support.extra_plotting_data.get_probability_of_orbit_data import *
+from algorithms.support.extra_plotting_data.get_probability_of_orbit_data_from_orbit import *
 from basic.constants.algorithm_working import *
 
 # Типы событий
@@ -46,7 +46,7 @@ class EventManager:
         )
 
 
-class AlgorithmS2(Algorithm):
+class AlgorithmTab3(Algorithm):
     def __init__(self, signal_to_change_progress_value=None):
         super().__init__(signal_to_change_progress_value)
 
@@ -241,7 +241,7 @@ class AlgorithmS2(Algorithm):
 
 
 def main(application_count, lm, mu, mu2, sg, dt1, dt2):
-    return AlgorithmS2().get_results(application_count, lm, mu, mu2, sg, dt1, dt2)
+    return AlgorithmTab3().get_results(application_count, lm, mu, mu2, sg, dt1, dt2)
 
 
 if __name__ == '__main__':
