@@ -1,11 +1,11 @@
 from PyQt5.QtCore import QSize
-from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtWidgets import QPushButton, QLabel
 
 from interface.tab1.tab1_widgets.graphics.AppCountGraphic import AppCountGraphic
 from interface.tab2.tab2_widgets.graphics.HandlerStatusGraphic import HandlerStatusGraphic
 from interface.tab1.tab1_widgets.graphics.ProbabilityProcessingGraphic import ProbabilityProcessingGraphic
 from interface.tab2.tab2_widgets.graphics.ProbabilityOrbitGraphic import ProbabilityOrbitGraphic
-from interface.tab2.tab2_widgets.parameters.ParameterManager import ParameterManager
+from interface.tab3.tab3_widgets.parameters.ParameterManager import ParameterManager
 
 
 class Tab3:
@@ -15,6 +15,14 @@ class Tab3:
         self.probability_processing_graphic = ProbabilityProcessingGraphic(graphics_installation_layout)
         self.probability_orbit_graphic = ProbabilityOrbitGraphic(graphics_installation_layout)
         self.parameter_manager = ParameterManager(parameters_installation_layout)
+
+        parameters_installation_layout.addWidget(QLabel("Дополнительно: "))
+
+        # Добавляем кнопку для вывода описания:
+        self.description_button = QPushButton()
+        self.description_button.setText("ОПИСАНИЕ ПАРАМЕТРОВ")
+        self.description_button.setMinimumSize(QSize(0, 30))
+        parameters_installation_layout.addWidget(self.description_button)
 
         # Добавляем кнопку для выгрузки данных графика probability_orbit_graphic в ФАЙЛ:
         self.file_button = QPushButton()

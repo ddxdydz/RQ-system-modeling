@@ -1,3 +1,6 @@
+from PyQt5.QtCore import QSize
+from PyQt5.QtWidgets import QPushButton, QLabel
+
 from interface.tab1.tab1_widgets.graphics.AppCountGraphic import AppCountGraphic
 from interface.tab1.tab1_widgets.graphics.HandlerStatusGraphic import HandlerStatusGraphic
 from interface.tab1.tab1_widgets.graphics.ProbabilityProcessingGraphic import ProbabilityProcessingGraphic
@@ -10,6 +13,14 @@ class Tab1:
         self.handler_status_graphic = HandlerStatusGraphic(graphics_installation_layout)
         self.probability_processing_graphic = ProbabilityProcessingGraphic(graphics_installation_layout)
         self.parameter_manager = ParameterManager(parameters_installation_layout)
+
+        parameters_installation_layout.addWidget(QLabel("Дополнительно: "))
+
+        # Добавляем кнопку для вывода описания:
+        self.description_button = QPushButton()
+        self.description_button.setText("ОПИСАНИЕ ПАРАМЕТРОВ")
+        self.description_button.setMinimumSize(QSize(0, 30))
+        parameters_installation_layout.addWidget(self.description_button)
 
     def plot_graphics(self, data_for_plotting):
         self.clear_graphics()  # Очищаем пространство от прошлых графиков

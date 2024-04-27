@@ -27,3 +27,42 @@ pyuic5 C:\Users\User\Documents\GitHub\Simulation-modeling-of-queuing-systems\int
         "time": list(times.keys()),
         "value": [(time / total_time) * 100 for time in times.values()]
     }
+
+
+
+# Типы событий
+APP_RECEIVING_EVENT = 0
+HANDLER_COMPLETION_EVENT = 1
+ORBIT_RECEIVING_EVENT = 2
+HANDLER_FREE_BROKEN_EVENT = 3
+HANDLER_PROCESSING_BROKEN_EVENT = 4
+HANDLER_RECOVER_EVENT = 5
+
+# Статусы обработчика
+FREE = 0  # Свободно
+PROCESSING = 1  # В обработке / занято
+BROKEN = 2  # В обработке / занято
+
+
+class EventManager:
+    def __init__(self):
+        # Времена наступления событий по их ID типа:
+        self.events_times = [inf, inf, inf, inf, inf, inf]
+
+        # Предыдущий момент времени:
+        self.T_last = 0
+
+        # Модальное время:
+        self.T_mod = 0
+
+    def change_event_time(self, event_type, event_delta_time):
+        self.events_times[event_type] = self.T_mod + event_delta_time
+
+    def get_event_time(self, event_type):
+        return self.events_times[event_type]
+
+    def get_nearest_event(self):
+        return min(
+            [0, 1, 2, 3, 4, 5],
+            key=lambda event_id: self.events_times[event_id]
+        )

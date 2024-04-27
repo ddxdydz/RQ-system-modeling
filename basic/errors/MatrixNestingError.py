@@ -1,0 +1,2 @@
+class MatrixNestingError(Exception):
+    pass

@@ -146,6 +146,10 @@ class Graphic(PlotWidget):
         for value in data_for_plotting["values"]:
             y_data.append(value)
             y_data.append(0)
+
+        if not y_data:  # если данных для вывода нет
+            return
+
         y_data.pop(-1)
 
         self.add_graphic(

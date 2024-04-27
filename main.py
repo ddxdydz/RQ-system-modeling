@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QMainWindow, QApplication
+from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox
 
 # Прямое подключение скрытых зависимостей для избежания неполной сборки exe-файла через pyinstaller:
 # import pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5
@@ -11,6 +11,8 @@ from PyQt5.QtWidgets import QMainWindow, QApplication
 from basic.constants.error_indexes import *
 from basic.constants.window_settings import *
 from basic.errors.FullnessError import FullnessError
+from basic.errors.MatrixNestingError import MatrixNestingError
+from basic.errors.MatrixSizeError import MatrixSizeError
 from basic.errors.RangeError import RangeError
 from interface.ui.MainWindow import Ui_MainWindow
 from interface.support.widgets.StatusBar import StatusBar
@@ -59,6 +61,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.launch_button_tab3.clicked.connect(self.launch)
         self.tab2.file_button.clicked.connect(lambda: self.print_to_file(2))
         self.tab3.file_button.clicked.connect(lambda: self.print_to_file(3))
+        self.tab1.description_button.clicked.connect(lambda: self.show_message_box(
+            self.tab1.parameter_manager.get_description()))
+        self.tab2.description_button.clicked.connect(lambda: self.show_message_box(
+            self.tab2.parameter_manager.get_description()))
+        self.tab3.description_button.clicked.connect(lambda: self.show_message_box(
+            self.tab3.parameter_manager.get_description()))
         self.status_bar.connect_stop_button(self.stop)
 
         # После завершения алгоритма будут вызваны переданные функции:
@@ -99,6 +107,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.to_based_state()
         except RangeError:
             self.status_bar.update_message("Ошибка: Некорректный диапазон")
+            self.to_based_state()
+        except MatrixSizeError as m_er:
+            self.status_bar.update_message(f"Ошибка: {m_er}")
+            self.to_based_state()
+        except MatrixNestingError:
+            self.status_bar.update_message("Ошибка: Неверная вложенность скобок")
             self.to_based_state()
 
     def stop(self):
@@ -159,6 +173,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if 'data_for_plotting' in results:
                     for v in results["data_for_plotting"]["probability_distribution_orbit"]["values"]:
                         file.write(f"{v}\n")
+
+    def show_message_box(self, message: str):
+        msg = QMessageBox()
+        msg.setWindowTitle("Описание")
+        msg.setText(message)
+        msg.show()
+        msg.exec_()
 
 
 def except_hook(cls, exception, traceback):
