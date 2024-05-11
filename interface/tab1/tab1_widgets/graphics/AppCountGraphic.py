@@ -1,3 +1,4 @@
+from basic.constants.plotting import PLOTTING_COUNT_DATA_LIMIT
 from interface.support.widgets.Graphic import Graphic
 
 
@@ -26,5 +27,8 @@ class AppCountGraphic(Graphic):
         self.layout_settings = {"stretch": 6}
         super().__init__(self.graphic_widget_settings, self.layout_settings, installation_layout)
 
-    def plot_graphic(self, data_for_plotting):
-        self.add_histogram(data_for_plotting, self.graphic_plot_settings)
+    def plot_graphic(self, data_for_plotting, compress_data=True):
+        data_x, data_y = data_for_plotting["time"], data_for_plotting["value"]
+        if compress_data:
+            data_x, data_y = Graphic.compress_data(data_x, data_y, PLOTTING_COUNT_DATA_LIMIT)
+        self.add_histogram(data_x, data_y, self.graphic_plot_settings)

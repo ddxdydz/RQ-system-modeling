@@ -28,8 +28,12 @@ class Tab1:
         self.plot_data_checkbox.setChecked(True)
         parameters_installation_layout.addWidget(self.plot_data_checkbox)
 
-    def plot_graphics(self, data_for_plotting):
+    def plot_graphics(self, data_for_plotting, plotting=True):
         self.clear_graphics()  # Очищаем пространство от прошлых графиков
+
+        if not plotting:
+            return
+
         self.app_count_graphic.plot_graphic(data_for_plotting["application_count_graphic"])
         self.handler_status_graphic.plot_graphic(data_for_plotting["handler_status_graphic"])
         self.probability_processing_graphic.plot_probability_distribution_processed_graphic(

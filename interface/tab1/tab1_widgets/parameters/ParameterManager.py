@@ -8,14 +8,14 @@ class ParameterManager:
             installation_layout=installation_layout,
             range_min=0.001,
             range_max=999,
-            default=3
+            default=2
         )
         self.mu = ParameterNumerical(
             label_text="μ: ",
             installation_layout=installation_layout,
             range_min=0.001,
             range_max=999,
-            default=1
+            default=3
         )
         self.sg = ParameterNumerical(
             label_text="σ: ",
@@ -28,7 +28,7 @@ class ParameterManager:
             label_text="Количество заявок:",
             installation_layout=installation_layout,
             range_min=0,
-            range_max=100000,
+            range_max=500000,
             default=4,
             is_oneline=False,
             is_int=True

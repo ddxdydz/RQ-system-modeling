@@ -52,6 +52,42 @@ class Graphic(PlotWidget):
         self.getPlotItem().setMenuEnabled(False)
         self.hideButtons()
 
+    @staticmethod
+    def compress_data(x_data, y_data, new_count_ticks):
+        if len(x_data) > new_count_ticks:
+            new_x_data, new_y_data = [0], [0]
+
+            step = (x_data[-1] - x_data[0]) / new_count_ticks
+
+            last_x, last_y = 0, 0
+            current_new_x = step
+            current_square_sum = 0
+
+            for x, y in zip(x_data, y_data):
+                if x > current_new_x:
+
+                    while x > current_new_x:
+
+                        current_square_sum += last_y * (current_new_x - last_x)
+
+                        new_x_data.append(current_new_x)
+                        new_y_data.append(current_square_sum / step)
+
+                        current_square_sum = 0
+
+                        last_x = current_new_x
+                        current_new_x += step
+
+                    current_square_sum = y * (x - last_x)
+
+                else:
+                    current_square_sum += last_y * (x - last_x)
+
+                last_x, last_y = x, y
+            return new_x_data, new_y_data
+
+        return x_data, y_data
+
     def get_max_value_y(self, y_data):
         if self.settings["maximum_value"] is None:
             return max(y_data)
@@ -115,41 +151,10 @@ class Graphic(PlotWidget):
             pen=mkPen(**graphic_plot_settings["pen_parameters"]),
         )
 
-    def add_histogram(self, data_for_plotting, graphic_plot_settings):
+    def add_histogram(self, x_data, y_data, graphic_plot_settings):
         # Удаляем последнее значение из данных для графиков для возможности отображения гистограм
         # Это последнее значение равняется изначальному значению и не влияет на общий результат
-        value = data_for_plotting["value"].copy()
-        value.pop(-1)
-
-        self.add_graphic(
-            data_for_plotting["time"], value,
-            graphic_plot_settings, step_mode="center"
-        )
-        self.update_left_ticks_text(y_data=value)
-        self.set_visual_range_x(x_data=data_for_plotting["time"])
-        self.set_visual_range_y(y_data=value)
-
-    def add_line_graph(self, data_for_plotting, graphic_plot_settings):
-        self.add_graphic(
-            data_for_plotting["time"], data_for_plotting["value"],
-            graphic_plot_settings
-        )
-        self.update_left_ticks_text(y_data=data_for_plotting["value"])
-        self.set_visual_range_x(x_data=data_for_plotting["time"])
-        self.set_visual_range_y(y_data=data_for_plotting["value"])
-
-    def add_columnar_diagram(self, data_for_plotting, graphic_plot_settings):
-        x_data, y_data = [], []
-        for count in data_for_plotting["counts"]:
-            x_data.append(count - COLUMNAR_GRAPHIC_WIDTH_INDENT)
-            x_data.append(count + COLUMNAR_GRAPHIC_WIDTH_INDENT)
-        for value in data_for_plotting["values"]:
-            y_data.append(value)
-            y_data.append(0)
-
-        if not y_data:  # если данных для вывода нет
-            return
-
+        y_data = y_data.copy()
         y_data.pop(-1)
 
         self.add_graphic(
@@ -158,6 +163,37 @@ class Graphic(PlotWidget):
         )
         self.update_left_ticks_text(y_data=y_data)
         self.set_visual_range_x(x_data=x_data)
-        ax = self.getAxis('bottom')
-        ax.setTicks([[(v, str(v)) for v in data_for_plotting["counts"]]])
         self.set_visual_range_y(y_data=y_data)
+
+    def add_line_graph(self, x_data, y_data, graphic_plot_settings):
+        self.add_graphic(
+            x_data, y_data,
+            graphic_plot_settings
+        )
+        self.update_left_ticks_text(y_data=y_data)
+        self.set_visual_range_x(x_data=x_data)
+        self.set_visual_range_y(y_data=y_data)
+
+    def add_columnar_diagram(self, x_data, y_data, graphic_plot_settings):
+        x_modified_data, y_modified_data = [], []
+        for count in x_data:
+            x_modified_data.append(count - COLUMNAR_GRAPHIC_WIDTH_INDENT)
+            x_modified_data.append(count + COLUMNAR_GRAPHIC_WIDTH_INDENT)
+        for value in y_data:
+            y_modified_data.append(value)
+            y_modified_data.append(0)
+
+        if not y_modified_data:  # если данных для вывода нет
+            return
+
+        y_modified_data.pop(-1)
+
+        self.add_graphic(
+            x_modified_data, y_modified_data,
+            graphic_plot_settings, step_mode="center"
+        )
+        self.update_left_ticks_text(y_data=y_modified_data)
+        self.set_visual_range_x(x_data=x_modified_data)
+        ax = self.getAxis('bottom')
+        ax.setTicks([[(v, str(v)) for v in x_data]])
+        self.set_visual_range_y(y_data=y_modified_data)
