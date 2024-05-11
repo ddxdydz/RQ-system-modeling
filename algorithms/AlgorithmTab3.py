@@ -102,7 +102,7 @@ class AlgorithmTab3(Algorithm):
         return self.v == self.processed_app_count
 
     def get_progress(self):
-        return int(self.T_mod * 100 / self.v)
+        return int(self.processed_app_count * 100 / self.v)
 
     def add_to_system(self):  # учёт поступления заявки в систему
         self.not_received_app_count -= 1
