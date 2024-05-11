@@ -1,0 +1,68 @@
+pyinstaller --onefile --windowed --icon program.ico program.py
+pyinstaller --onefile --windowed --icon C:\Users\UserLog.ru\PycharmProjects\Simulation-modeling-of-queuing-systems\data\icons\app_icon.ico C:\Users\UserLog.ru\PycharmProjects\Simulation-modeling-of-queuing-systems\main.py
+pyuic5 C:\Users\User\Documents\GitHub\Simulation-modeling-of-queuing-systems\interface\ui\MainWindow.ui -o C:\Users\User\Documents\GitHub\Simulation-modeling-of-queuing-systems\interface\ui\MainWindow.py
+    times = {0: 0}  # количество заявок на орбите: время нахождения
+    last_time = 0
+    last_orbit_apps_count = 0
+
+    for time, event_type, value in events:
+
+        if event_type == HS:
+            is_app_in_handler = True if value == PROCESSING else False
+        elif event_type == AC:
+            active_apps_count = value
+
+        current_orbit_apps_count = active_apps_count - int(is_app_in_handler)
+        if current_orbit_apps_count != last_orbit_apps_count:
+
+            times[last_orbit_apps_count] += time - last_time
+
+            if current_orbit_apps_count not in times.keys():
+                times[current_orbit_apps_count] = 0
+            last_time, orbit_apps_count = time, current_orbit_apps_count
+
+    total_time = app_time_list[-1] - app_time_list[0]
+    print(times)
+    return {
+        "time": list(times.keys()),
+        "value": [(time / total_time) * 100 for time in times.values()]
+    }
+
+
+
+# Типы событий
+APP_RECEIVING_EVENT = 0
+HANDLER_COMPLETION_EVENT = 1
+ORBIT_RECEIVING_EVENT = 2
+HANDLER_FREE_BROKEN_EVENT = 3
+HANDLER_PROCESSING_BROKEN_EVENT = 4
+HANDLER_RECOVER_EVENT = 5
+
+# Статусы обработчика
+FREE = 0  # Свободно
+PROCESSING = 1  # В обработке / занято
+BROKEN = 2  # В обработке / занято
+
+
+class EventManager:
+    def __init__(self):
+        # Времена наступления событий по их ID типа:
+        self.events_times = [inf, inf, inf, inf, inf, inf]
+
+        # Предыдущий момент времени:
+        self.T_last = 0
+
+        # Модальное время:
+        self.T_mod = 0
+
+    def change_event_time(self, event_type, event_delta_time):
+        self.events_times[event_type] = self.T_mod + event_delta_time
+
+    def get_event_time(self, event_type):
+        return self.events_times[event_type]
+
+    def get_nearest_event(self):
+        return min(
+            [0, 1, 2, 3, 4, 5],
+            key=lambda event_id: self.events_times[event_id]
+        )
