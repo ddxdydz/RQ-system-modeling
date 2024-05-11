@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QSize
-from PyQt5.QtWidgets import QPushButton, QLabel
+from PyQt5.QtWidgets import QPushButton, QLabel, QCheckBox
 
 from interface.tab1.tab1_widgets.graphics.AppCountGraphic import AppCountGraphic
 from interface.tab1.tab1_widgets.graphics.HandlerStatusGraphic import HandlerStatusGraphic
@@ -21,6 +21,12 @@ class Tab1:
         self.description_button.setText("ОПИСАНИЕ ПАРАМЕТРОВ")
         self.description_button.setMinimumSize(QSize(0, 30))
         parameters_installation_layout.addWidget(self.description_button)
+
+        # CheckBox для возможности не выводить данные на графики
+        self.plot_data_checkbox = QCheckBox()
+        self.plot_data_checkbox.setText("Строить графики")
+        self.plot_data_checkbox.setChecked(True)
+        parameters_installation_layout.addWidget(self.plot_data_checkbox)
 
     def plot_graphics(self, data_for_plotting):
         self.clear_graphics()  # Очищаем пространство от прошлых графиков

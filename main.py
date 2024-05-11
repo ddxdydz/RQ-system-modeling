@@ -136,11 +136,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             work_time = results['algorithm_working_time']
             work_time_for_status = round(work_time, 3) if work_time >= 0.01 else 0.01
             self.status_bar.update_message(f"Обработка завершена за {work_time_for_status} сек. ")
-            if alg_num == 1:
+            if alg_num == 1 and self.tab1.plot_data_checkbox.isChecked():
                 self.tab1.plot_graphics(results["data_for_plotting"])
-            elif alg_num == 2:
+            elif alg_num == 2 and self.tab2.plot_data_checkbox.isChecked():
                 self.tab2.plot_graphics(results["data_for_plotting"])
-            elif alg_num == 3:
+            elif alg_num == 3 and self.tab3.plot_data_checkbox.isChecked():
                 self.tab3.plot_graphics(results["data_for_plotting"])
 
     def to_based_state(self):
