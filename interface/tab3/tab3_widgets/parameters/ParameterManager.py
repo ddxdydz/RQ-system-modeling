@@ -67,7 +67,7 @@ class ParameterManager:
             label_text="Количество заявок:",
             installation_layout=installation_layout,
             range_min=0,
-            range_max=500000,
+            range_max=10000000,
             default=4,
             is_oneline=False,
             is_int=True
